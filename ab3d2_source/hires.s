@@ -58,8 +58,8 @@ intreqrl		equ		$01f
 				section code,code
 
 _start
-************************************************************************************
-;ich bin hack ----- invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
+**************************************************************************************
+;ich bin hack  -----  invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
 				movem.l	d0-d1/a0,-(a7)	
 				move.l	4.w,a0
 				move.b	$129(a0),d0
@@ -68,7 +68,7 @@ _start
 				beq.b	.not040
 				not.b	FULLSCRTEMP
 .not040
-************************************************************************************
+**************************************************************************************
 			jsr		MakePatch
 
 				lea.l	MiscResourceName,a1
