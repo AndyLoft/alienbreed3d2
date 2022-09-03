@@ -1735,7 +1735,7 @@ KEY_LINES:
 				dc.b	'  BACKWARDS      ',132+$4d,'  ',1
 				dc.b	'  FIRE           ',132+$65,'  ',1
 				dc.b	'  OPERATE        ',132+$40,'  ',1
-				dc.b	'  RUN            ',132+$61,'  ',1
+				dc.b	'  WALK           ',132+$61,'  ',1;was run AL
 				dc.b	'  FORCE S/S      ',132+$67,'  ',1
 				dc.b	'  S/S LEFT       ',132+$39,'  ',1
 				dc.b	'  S/S RIGHT      ',132+$3a,'  ',1
