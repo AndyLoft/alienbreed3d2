@@ -42,7 +42,7 @@ OpenMainScreen:
 				; may later also serve as IDCMP input source
 				sub.l	a0,a0
 				lea		MainWindowTags,a1
-				move.l	d0,MainWTagScreenPtr-MainWindowTags(a1) ; WA_CustomScreen
+				;move.l	d0,MainWTagScreenPtr-MainWindowTags(a1) ; WA_CustomScreen
 				CALLINT	OpenWindowTagList
 				tst.l	d0
 				;				beq	exit_closeall
@@ -146,22 +146,22 @@ MainNewScreen	dc.w	0						; ns_LeftEdge
 				dc.l	0						; ns_CustomBitMap
 
 				align	4
-MainWindowTags	dc.l	WA_Left,0
+MainWindowTags			dc.l	WA_CustomScreen
+MainWTagScreenPtr		dc.l	0						; will fill in screen pointer later
+				dc.l	WA_Left,0
 				dc.l	WA_Top,0
 				dc.l	WA_Width,0
 				dc.l	WA_Height,0
-				dc.l	WA_CustomScreen
-MainWTagScreenPtr dc.l	0						; will fill in screen pointer later
 				; intution.i states "WA_Flags ;not implemented at present"
 				; But I have seen code using it...
 				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
 				; Just to be sure, provide the same info again
-				dc.l	WA_Activate,1
-				dc.l	WA_Borderless,1
-				dc.l	WA_RMBTrap,1			; prevent menu rendering
-				dc.l	WA_NoCareRefresh,1
-				dc.l	WA_SimpleRefresh,1
-				dc.l	WA_Backdrop,1
+				;dc.l	WA_Activate,1
+				;dc.l	WA_Borderless,1
+				;dc.l	WA_RMBTrap,1			; prevent menu rendering
+				;dc.l	WA_NoCareRefresh,1
+				;dc.l	WA_SimpleRefresh,1
+				;dc.l	WA_Backdrop,1
 				dc.l	TAG_END,0
 
 				align	4
