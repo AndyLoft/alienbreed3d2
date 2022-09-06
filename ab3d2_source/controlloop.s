@@ -162,11 +162,11 @@ START:
 				;jsr		mnu_start	; For some reason this doesn't work
 										; Shows the wrong menu
 
-				jsr		mnu_copycredz
-				jsr		mnu_setscreen
-				move.l	a7,mnu_mainstack
+				; jsr		mnu_copycredz		;removed AL
+				; jsr		mnu_setscreen		;""
+				; move.l	a7,mnu_mainstack	;""
 
-				jsr		mnu_clearscreen
+				; jsr		mnu_clearscreen		;""
 
 ******************************
 
