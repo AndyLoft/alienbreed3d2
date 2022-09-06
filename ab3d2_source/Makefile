@@ -1,12 +1,12 @@
 CC=m68k-amigaos-gcc
 ASS=vasmm68k_mot
 LINK=vlink
-STRIP=m68k-amigaos-strip
 
-#find the toolchain's directory
-PREFIX = $(shell ./getprefix.sh "$(CC)")
+#find the toolchain's directory ; hard code this, can't make it work
+PREFIX = vbcc:targets
 
-CHEESEY ?= 0
+#just set it to 0, CHEESEY version will no longer compile
+CHEESEY = 0
 
 #-DCD32VER
 
@@ -30,9 +30,6 @@ clean:
 
 %.o:	%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
-
-%_stripped:	%
-	$(STRIP) --strip-debug --strip-unneeded -o $@ $< 
 
 #############################################################
 #
