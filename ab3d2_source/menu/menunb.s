@@ -305,9 +305,9 @@ mnu_clearscreen:
 				rts
 
 mnu_setscreen:
-				lea		Bitmap+bm_Planes,a0		; provide "fake" bitplane pointers such that
+				lea	Bitmap+bm_Planes,a0			; provide "fake" bitplane pointers such that
 				move.w	#7,d0					; opening the screen/window will not overwrite
-.setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
+.setPlane			move.l	#mnu_morescreen,(a0)+			; the hardcoded background pattern
 				dbra	d0,.setPlane
 
 				CALLGRAF WaitTOF
@@ -318,18 +318,34 @@ mnu_setscreen:
 				move.l	d0,MenuScreen
 				; need a window to be able to clear out mouse pointer
 				; may later also serve as IDCMP input source
+				
+		move.l	#16,d0				;xsize
+		move.l	#1,d1				;ysize
+		move.l	#2,d2				;depth
+		move.l	#BMF_CLEAR|BMF_DISPLAYABLE,d3	;flags
+		sub.l	a0,a0				;FriendBitMap
+		CALLGRAF AllocBitMap
+		move.l	d0,mnu_sprbm1
+
+		sub.l	a0,a0
+		lea	mnu_pointerclass,a1
+		lea	mnu_pointertags,a2
+		CALLINT NewObjectA
+		move.l	d0,pointerobject
+		
 				sub.l	a0,a0
-				lea		WindowTags,a1
+				lea	WindowTags,a1;lea		WindowTags,a0
 				;move.l	d0,WTagScreenPtr-WindowTags(a1) ; WA_CustomScreen
 				CALLINT	OpenWindowTagList
 				move.l	d0,MenuWindow
-				move.l	d0,a0
-				lea		emptySprite,a1
-				moveq	#1,d0
-				moveq	#16,d1
-				move.l	d0,d2
-				move.l	d0,d3
-				CALLINT	SetPointer
+
+				; move.l	d0,a0
+				; lea	emptySprite,a1
+				; moveq	#1,d0
+				; moveq	#16,d1
+				; move.l	d0,d2
+				; move.l	d0,d3
+				; CALLINT	SetPointer
 
 				; we open the Window pixel size to prevent it from clearing
 				; the screen immediately. This resizes the window to fullscreen.
@@ -350,10 +366,10 @@ mnu_setscreen:
 				bsr.w	mnu_fadein
 				rts
 
-mnu_vblint:		bsr.w	mnu_movescreen
-				bsr.w	mnu_dofire
+mnu_vblint:			;bsr.w	mnu_movescreen;removed AL
+				;bsr.w	mnu_dofire;removed AL
 				bsr.w	mnu_animcursor
-				bsr.w	mnu_plot
+				;bsr.w	mnu_plot;removed AL
 				rts
 
 mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
@@ -2164,19 +2180,19 @@ main_counter:	dc.l	0
 main_vbrbase:	dc.l	0
 timer:			dc.l	0
 
-
-BltNode			dc.l	0						; bn_n
-				dc.l	mnu_pass1				; bn_function
+				align	4
+BltNode				dc.l	0						; bn_n
+				dc.l	mnu_pass1					; bn_function
 				dc.b	0						; bn_stat
 				dc.b	0						; bn_dummy
 				dc.w	0						; bn_blitsize
 				dc.w	0						; bn_beamsync
 				dc.l	0						; bn_cleanup
 
-
-Bitmap			dc.w	320/8					; bm_BytesPerRow
+				align	4
+Bitmap				dc.w	320/8						; bm_BytesPerRow
 				dc.w	256						; bm_Rows
-				dc.b	BMF_DISPLAYABLE			; bm_Flags
+				dc.b	BMF_DISPLAYABLE					; bm_Flags
 				dc.b	8						; bm_Depth
 				dc.w	0						; bm_Pad
 				dc.l	mnu_morescreen			; mnu_screen				; The lower two bitplanes are the scrolling
@@ -2188,7 +2204,10 @@ Bitmap			dc.w	320/8					; bm_BytesPerRow
 				dc.l	mnu_morescreen
 				dc.l	mnu_morescreen
 
-ScreenTags		dc.l	SA_Width,320
+				align	4
+ScreenTags			dc.l	SA_Left,0
+				dc.l	SA_Top,0
+				dc.l	SA_Width,320
 				dc.l	SA_Height,256
 				dc.l	SA_Depth,8
 				dc.l	SA_BitMap,Bitmap
@@ -2198,26 +2217,28 @@ ScreenTags		dc.l	SA_Width,320
 				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
-MenuScreen		dc.l	0
+;				align	4
+;MenuScreen			dc.l	0
 
-WindowTags			dc.l	WA_CustomScreen
-WTagScreenPtr			dc.l	0						; will fill in screen pointer later
-				dc.l	WA_Left,0
-				dc.l	WA_Top,0
-				dc.l	WA_Width,0
-				dc.l	WA_Height,0
-				; intution.i states "WA_Flags ;not implemented at present"
-				; But I have seen code using it...
-				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
-				; Just to be sure, provide the same info again
+				align	4
+WindowTags			dc.l	WA_Left,0,WA_Top,0,WA_Width,320,WA_Height,256
+				dc.l	WA_IDCMP,IDCMP_VANILLAKEY,WA_CustomScreen
+MenuScreen			dc.l	0,WA_Borderless,1,WA_Activate,1,WA_Backdrop,1,WA_RMBTrap,1
+				;dc.l	WA_Left,0
+				;dc.l	WA_Top,0
+				;dc.l	WA_Width,0
+				;dc.l	WA_Height,0
 				;dc.l	WA_Activate,1
 				;dc.l	WA_Borderless,1
 				;dc.l	WA_RMBTrap,1			; prevent menu rendering
-				;dc.l	WA_NoCareRefresh,1
-				;dc.l	WA_SimpleRefresh,1
+				dc.l	WA_NoCareRefresh,1
+				dc.l	WA_SimpleRefresh,1
 				;dc.l	WA_Backdrop,1
+				dc.l	WA_Pointer
+pointerobject:			dc.l	0
 				dc.l	TAG_END,0
 
+				align	4
 MenuWindow		dc.l	0
 
 				section	data_c,data_c
@@ -2227,6 +2248,12 @@ mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
 				ds.b	40*256*2				; 2 more bitplanes
 mnu_morescreen:	ds.b	40*256*8				;
 
+mnu_pointerclass:	dc.b	"pointerclass",0
+
 emptySprite		ds.w	6,0
+
+mnu_pointertags:	dc.l	POINTERA_BitMap
+mnu_sprbm1:	dc.l	0
+		dc.l	POINTERA_WordWidth,1,TAG_END
 
 				section	code,code
