@@ -35,6 +35,7 @@
 				include	intuition/intuitionbase.i
 				include	intuition/preferences.i
 				include	intuition/screens.i
+				include	intuition/pointerclass.i
 
 				include	libraries/dos.i
 				include	libraries/dosextens.i
