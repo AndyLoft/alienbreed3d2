@@ -38,22 +38,37 @@ OpenMainScreen:
 				;	beq	exit_closeall		if failed the close both, exit
 				move.l	d0,MainScreen
 
+		move.l	#16,d0				;xsize
+		move.l	#1,d1				;ysize
+		move.l	#2,d2				;depth
+		move.l	#BMF_CLEAR|BMF_DISPLAYABLE,d3	;flags
+		sub.l	a0,a0				;FriendBitMap
+		CALLGRAF AllocBitMap
+		move.l	d0,Mainsprbm1
+
+		sub.l	a0,a0
+		lea	Mainpointerclass,a1
+		lea	Mainpointertags,a2
+		CALLINT NewObjectA
+		move.l	d0,Mainpointerobject
+		
 				; need a window to be able to clear out mouse pointer
 				; may later also serve as IDCMP input source
 				sub.l	a0,a0
-				lea		MainWindowTags,a1
+				lea		MainWindowTags,a1;lea		MainWindow,a0
 				;move.l	d0,MainWTagScreenPtr-MainWindowTags(a1) ; WA_CustomScreen
 				CALLINT	OpenWindowTagList
-				tst.l	d0
+				;tst.l	d0
 				;				beq	exit_closeall
 				move.l	d0,MainWindow
-				move.l	d0,a0
-				lea		emptySprite,a1
-				moveq	#1,d0
-				moveq	#16,d1
-				move.l	d0,d2
-				move.l	d0,d3
-				CALLINT	SetPointer
+				
+				; move.l	d0,a0
+				; lea	emptySprite,a1
+				; moveq	#1,d0
+				; moveq	#16,d1
+				; move.l	d0,d2
+				; move.l	d0,d3
+				; CALLINT	SetPointer
 
 				jsr		LoadMainPalette
 				move.l	MainWindow,a0
@@ -114,12 +129,14 @@ SetupDoubleheightCopperlist:
 				rts
 
 				align	4
-MainScreen:		dc.l	0
+;MainScreen:		dc.l	0
 MyRaster0		dc.l	0
 MyRaster1		dc.l	0
 
 				align	4
-MainScreenTags	dc.l	SA_Width,320
+MainScreenTags			dc.l	SA_Left,0
+				dc.l	SA_Top,0
+				dc.l	SA_Width,320
 				dc.l	SA_Height,256
 				dc.l	SA_Depth,8
 				dc.l	SA_BitMap,MainBitmap
@@ -131,7 +148,7 @@ MainScreenTags	dc.l	SA_Width,320
 				dc.l	TAG_END,0
 
 				align	4
-MainNewScreen	dc.w	0						; ns_LeftEdge
+MainNewScreen			dc.w	0						; ns_LeftEdge
 				dc.w	0						; ns_TopEdge
 				dc.w	320						; ns_Width
 				dc.w	256						; ns_Height
@@ -139,36 +156,35 @@ MainNewScreen	dc.w	0						; ns_LeftEdge
 				dc.b	0						; ns_DetailPen
 				dc.b	0						; ns_BlockPen
 				dc.w	0						; ns_ViewModes
-				dc.w	CUSTOMSCREEN!SCREENQUIET; ns_Type
+				dc.w	CUSTOMSCREEN!SCREENQUIET			; ns_Type
 				dc.l	0						; ns_Font
 				dc.l	0						; ns_DefaultTitle
 				dc.l	0						; ns_Gadgets
 				dc.l	0						; ns_CustomBitMap
 
 				align	4
-MainWindowTags			dc.l	WA_CustomScreen
-MainWTagScreenPtr		dc.l	0						; will fill in screen pointer later
-				dc.l	WA_Left,0
-				dc.l	WA_Top,0
-				dc.l	WA_Width,0
-				dc.l	WA_Height,0
-				; intution.i states "WA_Flags ;not implemented at present"
-				; But I have seen code using it...
-				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
-				; Just to be sure, provide the same info again
+MainWindowTags			dc.l	WA_Left,0,WA_Top,0,WA_Width,320,WA_Height,256
+				dc.l	WA_IDCMP,IDCMP_VANILLAKEY,WA_CustomScreen
+MainScreen			dc.l	0,WA_Borderless,1,WA_Activate,1,WA_Backdrop,1,WA_RMBTrap,1
+				;dc.l	WA_Left,0
+				;dc.l	WA_Top,0
+				;dc.l	WA_Width,0
+				;dc.l	WA_Height,0
 				;dc.l	WA_Activate,1
 				;dc.l	WA_Borderless,1
 				;dc.l	WA_RMBTrap,1			; prevent menu rendering
-				;dc.l	WA_NoCareRefresh,1
-				;dc.l	WA_SimpleRefresh,1
+				dc.l	WA_NoCareRefresh,1
+				dc.l	WA_SimpleRefresh,1
 				;dc.l	WA_Backdrop,1
+				dc.l	WA_Pointer
+Mainpointerobject:		dc.l	0
 				dc.l	TAG_END,0
 
-				align	4
-MainWindow		dc.l	0
+				; align	4
+MainWindow			dc.l	0
 
 				align	4
-MainBitmap		dc.w	320/8					; bm_BytesPerRow
+MainBitmap			dc.w	320/8					; bm_BytesPerRow
 				dc.w	256						; bm_Rows
 				dc.b	BMF_DISPLAYABLE			; bm_Flags
 				dc.b	8						; bm_Depth
@@ -176,8 +192,15 @@ MainBitmap		dc.w	320/8					; bm_BytesPerRow
 				ds.l	8						; bm_Planes
 
 				align	4
-MyUCopList		ds.b	ucl_SIZEOF				; see copper.i
+MyUCopList			ds.b	ucl_SIZEOF				; see copper.i
 
 				align	4
-VidControlTags	dc.l	VTAG_USERCLIP_SET,1
+VidControlTags			dc.l	VTAG_USERCLIP_SET,1
 				dc.l	VTAG_END_CM,0
+
+Mainpointerclass:	dc.b	"pointerclass",0
+
+				align	4
+Mainpointertags:	dc.l	POINTERA_BitMap
+Mainsprbm1:	dc.l	0
+		dc.l	POINTERA_WordWidth,1,TAG_END
