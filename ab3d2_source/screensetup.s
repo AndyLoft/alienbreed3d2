@@ -6,6 +6,11 @@ MyAllocRaster:
 				rts
 
 OpenMainScreen:
+				lea		MainBitmap,a0
+				moveq.l	#8,d0
+				move.l	#320,d1
+				move.l	#256,d2
+				CALLGRAF InitBitMap
 
 				bsr		MyAllocRaster
 				;				beq	exit_closeall
@@ -128,6 +133,108 @@ SetupDoubleheightCopperlist:
 				CALLINT RethinkDisplay
 				rts
 
+********************************************************************************
+;fps counter c/o Grond
+time1:
+		move.l	a6,-(sp)
+		move.l	timerbase,a6
+		lea	first,a0
+		jsr	_LVOReadEClock(a6)
+		move.l	(sp)+,a6
+		rts
+
+
+********************************************************************************
+
+time2:
+		movem.l	d2/a2/a6,-(sp)
+		move.l	timerbase,a6
+		lea	second,a0
+		jsr	_LVOReadEClock(a6)
+		move.l	d0,d2
+		lea	second,a0
+		lea	first,a1
+		jsr	_LVOSubTime(a6)
+
+; average:
+		move.l	lasttime,d1
+		bne	.skip
+		add.l	4(a0),d1
+.skip:		
+		add.l	4(a0),d1
+		asr.l	#1,d1
+		move.l	d1,lasttime
+
+		move.l	d2,d0
+		mulu.l	#1000,d0
+		divu.l	d1,d0
+		lea	outputstring,a0
+
+		move.l	#10000,d1
+
+		divu.w	d1,d0
+		move.b	d0,d2
+		beq	.leadingzero
+
+		add.b	#"0",d2			; convert to ASCII
+		move.b	d2,(a0)+
+		bra	.next
+
+.leadingzero:
+		move.b	#" ",(a0)+
+
+.next:
+		sub.w	d0,d0
+		swap	d0
+		divu.w	#10,d1
+		divu.w	d1,d0
+		move.b	d0,d2
+		add.b	#"0",d2			; convert to ASCII
+		move.b	d2,(a0)+
+
+		move.b	#",",(a0)+
+
+		sub.w	d0,d0
+		swap	d0
+		divu.w	#10,d1
+		divu.w	d1,d0
+		move.b	d0,d2
+		add.b	#"0",d2			; convert to ASCII
+		move.b	d2,(a0)+
+
+		sub.w	d0,d0
+		swap	d0
+		divu.w	#10,d1
+		divu.w	d1,d0
+		move.b	d0,d2
+		add.b	#"0",d2			; convert to ASCII
+		move.b	d2,(a0)+
+
+		move.l	#" fps",(a0)+
+;		move.b	#" ",(a0)
+
+		;move.l	gfxbase,a6
+		move.l	MainScreen,a0
+		lea	sc_RastPort(a0),a1
+		lea	sc_ViewPort(a0),a0
+		move.l	vp_RasInfo(a0),a0
+		move.w	ri_RyOffset(a0),d1
+		move.l	a1,a2
+		clr.l	d0
+		add.w	#10,d1
+		ext.l	d1
+		CALLGRAF Move
+
+		lea	outputstring,a0
+		move.l	a2,a1
+		moveq	#9,d0
+		jsr	_LVOText(a6)
+		movem.l	(sp)+,d2/a2/a6
+		rts
+
+
+********************************************************************************
+
 				align	4
 ;MainScreen:		dc.l	0
 MyRaster0		dc.l	0
@@ -199,8 +306,18 @@ VidControlTags			dc.l	VTAG_USERCLIP_SET,1
 				dc.l	VTAG_END_CM,0
 
 Mainpointerclass:	dc.b	"pointerclass",0
+timerrequest:	ds.b	IOTV_SIZE
+timername:	dc.b	"timer.device",0
+outputstring:	dcb.b	10
 
 				align	4
+				
+timerbase:	dc.l	0
+timerflag:	dc.l	-1
+first:		dc.l	0,0
+second:		dc.l	0,0
+lasttime:	dc.l	0
+
 Mainpointertags:	dc.l	POINTERA_BitMap
 Mainsprbm1:	dc.l	0
 		dc.l	POINTERA_WordWidth,1,TAG_END

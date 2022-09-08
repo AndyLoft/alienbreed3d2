@@ -58,9 +58,10 @@ intreqrl		equ		$01f
 				section code,code
 
 _start
+				movem.l	d1-a6,-(sp)
 **************************************************************************************
 ;ich bin hack  -----  invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
-				movem.l	d0-d1/a0,-(a7)	
+				;movem.l	d0-d1/a0,-(a7)	
 				move.l	4.w,a0
 				move.b	$129(a0),d0
 				move.l	#68040,d1	;68040
@@ -106,12 +107,21 @@ _start
 
 				st		GOURSEL
 
-				lea		VBLANKInt(pc),a1
+				lea	VBLANKInt(pc),a1
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
+		lea	timername,a0
+		lea	timerrequest,a1
+		moveq	#0,d0
+		moveq	#0,d1
+		jsr	_LVOOpenDevice(a6)
+		move.l	timerrequest+IO_DEVICE,timerbase
+		move.l	d0,timerflag
+		;bne	error_exit
+		
 				IFEQ	CD32VER
-				lea		KEYInt(pc),a1
+				lea	KEYInt(pc),a1
 				moveq	#INTB_PORTS,d0
 				CALLEXEC AddIntServer
 				ENDC
@@ -138,7 +148,7 @@ _start
 				ENDC
 
 				; allocate chunky render buffer in fastmem
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_FAST,d1
 				move.l	#FASTBUFFERSize,d0
 				CALLEXEC AllocVec
 				move.l	d0,FASTBUFFERalloc
@@ -181,7 +191,7 @@ fillconst:
 
 ;*******************************************************************************
 
-FASTBUFFERSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
+FASTBUFFERSize	equ		SCREENWIDTH*256+15					; screen size plus alignment
 
 FASTBUFFER:
 				dc.l	0						; aligned address
@@ -444,10 +454,10 @@ AppName:		dc.b	'TheKillingGrounds',0
 				cnop	0,4
 
 VBLANKInt:
-				dc.l	0,0						;is_Node
+				dc.l	0,0				;is_Node
 				dc.b	NT_INTERRUPT,9			;is_Node
-				dc.l	AppName					;is_Node
-				dc.l	0						;is_Data
+				dc.l	AppName				;is_Node
+				dc.l	0				;is_Data
 				dc.l	VBlankInterrupt			;is_Code
 
 KEYInt:
@@ -977,7 +987,7 @@ clrmessbuff:
 				move.l	#0,PLR2_zspdval
 				move.l	#0,PLR2_yvel
 
-
+				jsr	time1
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -1243,9 +1253,9 @@ waitmaster:
 				dbra	d1,.putPlanePtr
 				; viewport still in a0
 				CALLGRAF ScrollVPort
-
+				jsr	time2				;fps counter c/o Grond
 *****************************************************************
-
+				jsr	time1				;fps counter c/o Grond
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
 				move.l	d0,MIDDLEY
