@@ -42,15 +42,15 @@ CD32VER			equ		0
 FS_WIDTH		equ		320
 FS_HEIGHT		equ		232
 SMALL_WIDTH		equ		192
-SMALL_HEIGHT	equ		160
+SMALL_HEIGHT		equ		160
 
 SCREENWIDTH		equ		320
 
 
 maxscrdiv		EQU		8
 max3ddiv		EQU		5
-playerheight	EQU		12*1024
-playercrouched	EQU		8*1024
+playerheight		EQU		12*1024
+playercrouched		EQU		8*1024
 scrheight		EQU		80
 intreqrl		equ		$01f
 
@@ -70,7 +70,7 @@ _start
 				not.b	FULLSCRTEMP
 .not040
 **************************************************************************************
-		jsr		MakePatch
+		;jsr		MakePatch
 
 				lea.l	MiscResourceName,a1
 				CALLEXEC OpenResource			;Open "misc.resource"
@@ -404,8 +404,8 @@ noload:
 				rts
 
 doslibname:		DOSNAME
-MiscResourceName: MISCNAME
-PotgoResourceName: POTGONAME
+MiscResourceName:	MISCNAME
+PotgoResourceName:	POTGONAME
 
 				align	4
 _DOSBase:		dc.l	0
@@ -1253,9 +1253,15 @@ waitmaster:
 				dbra	d1,.putPlanePtr
 				; viewport still in a0
 				CALLGRAF ScrollVPort
+				
 				jsr	time2				;fps counter c/o Grond
 *****************************************************************
 				jsr	time1				;fps counter c/o Grond
+
+				CALLGRAF WaitTOF			;hack to limit screen update to 50fps
+				;CALLGRAF WaitTOF			;add this for 25fps
+				;CALLGRAF WaitTOF			;add this for 12.5fps
+
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
 				move.l	d0,MIDDLEY
@@ -9412,7 +9418,7 @@ endalan:
 
 alanptr:		dc.l	alan
 
-Time2:			dc.l	0
+Time2:			dc.l	0						;not the time2 used for fps counter look in screensetup.s for that!
 dispco:
 				dc.w	0
 
@@ -9607,11 +9613,11 @@ VBlankInterrupt:
 
 				add.l	#1,counter
 				add.l	#1,main_counter
-
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
 				subq.l	#1,timer
 .nodec:
+
 				SAVEREGS
 				bsr.s	.routine
 
@@ -9620,12 +9626,18 @@ VBlankInterrupt:
 				move.l	d0,a0
 				jsr		(a0)
 .noint:
+
 				GETREGS
-				lea		_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
+
+				lea	_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
 				moveq	#1,d0
 				rts
+
 .routine
+
+
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
+
 				tst.b	doanything
 				bne		dosomething
 
