@@ -1258,9 +1258,8 @@ waitmaster:
 *****************************************************************
 				jsr	time1				;fps counter c/o Grond
 
-				CALLGRAF WaitTOF			;hack to limit screen update to 50fps
+				CALLGRAF WaitTOF			;hack to limit screen update to 50fps !!!only use if target is uae/fast emulator, cripples performance on REAL hardware!!!
 				;CALLGRAF WaitTOF			;add this for 25fps
-				;CALLGRAF WaitTOF			;add this for 12.5fps
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
