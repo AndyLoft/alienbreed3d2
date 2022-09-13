@@ -108,7 +108,7 @@ _start
 				st		GOURSEL
 
 				lea	VBLANKInt(pc),a1
-				moveq	#INTB_VERTB,d0
+				move.l	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
 		lea	timername,a0
@@ -1238,7 +1238,6 @@ waitmaster:
 
 *****************************************************************
 
-
 				; Flip screens
 				move.l	MainScreen,a1
 				lea		sc_ViewPort(a1),a1
@@ -1257,9 +1256,18 @@ waitmaster:
 				jsr	time2				;fps counter c/o Grond
 *****************************************************************
 				jsr	time1				;fps counter c/o Grond
-
-				CALLGRAF WaitTOF			;hack to limit screen update to 50fps !!!only use if target is uae/fast emulator, cripples performance on REAL hardware!!!
+.waitvbl
+				move.l	VBLCOUNTLAST,d0
+				move.l	VBLCOUNT,d1
+				cmp.l	d0,d1
+				beq.s	.waitvbl
+				move.l	d1,VBLCOUNTLAST
+				move.l	#0,d0
+				move.l	#0,d1
+				
+				;CALLGRAF WaitTOF			;hack to limit screen update to 50fps
 				;CALLGRAF WaitTOF			;add this for 25fps
+				;CALLGRAF WaitTOF			;add this for 12.5fps
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -9600,6 +9608,9 @@ COUNTER:		dc.w	0
 COUNTER2:		dc.w	0
 COUNTSPACE:		ds.b	160
 
+VBLCOUNT:		dc.l	0
+VBLCOUNTLAST:		dc.l	0
+
 OtherInter:
 				move.w	#$0010,$dff000+intreq
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -9612,6 +9623,8 @@ VBlankInterrupt:
 
 				add.l	#1,counter
 				add.l	#1,main_counter
+				;lea	VBLCOUNT(PC),a0
+				add.l	#1,VBLCOUNT
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
 				subq.l	#1,timer
@@ -9625,11 +9638,11 @@ VBlankInterrupt:
 				move.l	d0,a0
 				jsr		(a0)
 .noint:
-
 				GETREGS
 
 				lea	_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
 				moveq	#1,d0
+				
 				rts
 
 .routine
