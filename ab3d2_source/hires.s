@@ -1213,6 +1213,15 @@ nofadedownhc:
 
 .nopause:
 
+.waitvbl
+				move.l	VBLCOUNTLAST,d0
+				move.l	VBLCOUNT,d1
+				cmp.l	d0,d1
+				beq.s	.waitvbl
+				move.l	d1,VBLCOUNTLAST
+				move.l	#0,d0
+				move.l	#0,d1
+				
 ; Swap screen bitmaps
 				move.l	SCRNDRAWPT,d0
 				move.l	SCRNSHOWPT,SCRNDRAWPT
@@ -1256,14 +1265,14 @@ waitmaster:
 				jsr	time2				;fps counter c/o Grond
 *****************************************************************
 				jsr	time1				;fps counter c/o Grond
-.waitvbl
-				move.l	VBLCOUNTLAST,d0
-				move.l	VBLCOUNT,d1
-				cmp.l	d0,d1
-				beq.s	.waitvbl
-				move.l	d1,VBLCOUNTLAST
-				move.l	#0,d0
-				move.l	#0,d1
+; .waitvbl
+				; move.l	VBLCOUNTLAST,d0
+				; move.l	VBLCOUNT,d1
+				; cmp.l	d0,d1
+				; beq.s	.waitvbl
+				; move.l	d1,VBLCOUNTLAST
+				; move.l	#0,d0
+				; move.l	#0,d1
 				
 				;CALLGRAF WaitTOF			;hack to limit screen update to 50fps
 				;CALLGRAF WaitTOF			;add this for 25fps
