@@ -135,12 +135,12 @@ START:
 				CALLEXEC OpenLibrary
 				move.l	d0,_DOSBase
 
-				moveq	#INTUITION_REV,d0		version
+				moveq	#INTUITION_REV,d0		;version
 				lea		int_name(pc),a1
 				CALLEXEC OpenLibrary
 				tst.l	d0
 ;	beq	exit_false		if failed then quit
-				move.l	d0,_IntuitionBase		else save the pointer
+				move.l	d0,_IntuitionBase		;else save the pointer
 
 				; Open Graphics.library, store old coppper list etc.
 				jsr		OpenGraphics
@@ -397,6 +397,8 @@ centre_view_key:
 				dc.b	41
 next_weapon_key:
 				dc.b	13
+frame_limit_key:
+				dc.b	$34
 
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0

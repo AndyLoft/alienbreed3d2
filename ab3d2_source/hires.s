@@ -1219,6 +1219,29 @@ nofadedownhc:
 				cmp.l	d0,d1
 				beq.s	.waitvbl
 				move.l	d1,VBLCOUNTLAST
+				tst.l	FPSLIMITER
+				beq.s	.nolimit
+				cmp.l	#1,FPSLIMITER
+				beq.s	.onevbl
+				cmp.l	#2,FPSLIMITER
+				beq.s	.twovbl
+				cmp.l	#3,FPSLIMITER
+				beq.s	.threevbl
+				cmp.l	#4,FPSLIMITER
+				beq.s	.fourvbl
+				cmp.l	#5,FPSLIMITER
+				;beq.s	.fourvbl
+				CALLGRAF WaitTOF
+.fourvbl
+				CALLGRAF WaitTOF
+.threevbl
+				CALLGRAF WaitTOF
+.twovbl
+				CALLGRAF WaitTOF
+.onevbl
+				CALLGRAF WaitTOF
+				CALLGRAF WaitTOF
+.nolimit
 				move.l	#0,d0
 				move.l	#0,d1
 				
@@ -9619,6 +9642,7 @@ COUNTSPACE:		ds.b	160
 
 VBLCOUNT:		dc.l	0
 VBLCOUNTLAST:		dc.l	0
+FPSLIMITER		dc.l	0
 
 OtherInter:
 				move.w	#$0010,$dff000+intreq
