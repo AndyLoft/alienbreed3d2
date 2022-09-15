@@ -74,7 +74,7 @@ PLR1_mouse_control
 				moveq	#0,d7
 
 ;the right mouse button triggers the forward key AL;next_weapon key
-				move.b	next_weapon_key,d7;changed to forward key AL ; was next_weapon_key,d7
+				move.b	forward_key,d7;changed to forward_key AL ; was next_weapon_key,d7
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
