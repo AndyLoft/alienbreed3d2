@@ -74,7 +74,7 @@ PLR1_mouse_control
 				moveq	#0,d7
 
 ;the right mouse button triggers the forward key AL;next_weapon key
-				move.b	forward_key,d7;changed to forward key AL ; was next_weapon_key,d7
+				move.b	next_weapon_key,d7;changed to forward key AL ; was next_weapon_key,d7
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
@@ -351,7 +351,7 @@ gogog:
 
 .notswapscr2:
 
-				;tst.b	$34(a5)				;$34=vV
+				;tst.b	$56(a5)				;$56=F7
 				move.b	frame_limit_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.noframelimit
