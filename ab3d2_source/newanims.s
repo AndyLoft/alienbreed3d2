@@ -690,7 +690,6 @@ PulseANIM4:
 
 				dc.w	16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17
-
 				dc.w	999
 
 PulseANIM5:
@@ -816,14 +815,17 @@ objmoveanim:
 				move.w	#0,PLR2_FloorSpd
 
 				bsr		LiftRoutine
+
+				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
+				bgt.s	notzero
 				bsr		brightanim
 
-				subq.w	#1,animtimer
-				bgt.s	notzero
-				move.w	#2,animtimer
-				move.l	otherrip,d0
-				move.l	RipTear,otherrip
-				move.l	d0,RipTear
+				;subq.w	#1,animtimer
+				;bgt.s	notzero
+				move.w	#3,animtimer
+				move.l	otherrip,d0		;what are these for?
+				move.l	RipTear,otherrip	;""
+				move.l	d0,RipTear		;""
 notzero:
 
 				rts

@@ -1213,10 +1213,8 @@ nofadedownhc:
 
 .nopause:
 
-;.waitvbl
 				move.l	VBLCOUNTLAST,d2
-				move.l	FPSLIMITER,d3
-				add.l	d3,d2
+				add.l	FPSLIMITER,d2
 .waitvbl
 				move.l	VBLCOUNT,d3
 				cmp.l	d2,d3
@@ -1269,18 +1267,6 @@ waitmaster:
 				jsr	time2				;fps counter c/o Grond
 *****************************************************************
 				jsr	time1				;fps counter c/o Grond
-; .waitvbl
-				; move.l	VBLCOUNTLAST,d0
-				; move.l	VBLCOUNT,d1
-				; cmp.l	d0,d1
-				; beq.s	.waitvbl
-				; move.l	d1,VBLCOUNTLAST
-				; move.l	#0,d0
-				; move.l	#0,d1
-				
-				;CALLGRAF WaitTOF			;hack to limit screen update to 50fps
-				;CALLGRAF WaitTOF			;add this for 25fps
-				;CALLGRAF WaitTOF			;add this for 12.5fps
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -9638,6 +9624,7 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
+				subq.w	#1,animtimer
 
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
