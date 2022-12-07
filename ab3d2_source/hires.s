@@ -2082,8 +2082,11 @@ nodrawp2:
 				move.b	Plr2_Teleported_b,d5
 				clr.b	Plr2_Teleported_b
 .notplr2
-				jsr		CHUNKYTOPLANAR
 
+				tst.b	c2pOutput
+				bne	.noOutput
+				jsr		CHUNKYTOPLANAR
+.noOutput
 
 				move.l	#KeyMap,a5
 				tst.b	$4a(a5)
