@@ -110,10 +110,11 @@ KVALTOASC:
 				dc.b	'LAL ','RAL ','LAM ','RAM '
 				dc.b	'    ','    ','    ','    '
 				dc.b	'    ','    '
+;110
 				dc.b	'    ','    ','    ','    '
 				dc.b	'    ','    ','    ','    '
 				dc.b	'    ','    '
-
+;120
 				even
 
 FINISHEDLEVEL:	dc.w	0
@@ -357,6 +358,12 @@ bordername:		dc.b	"ab3:includes/newborderRAW",0
 borderpacked:	incbin	"includes/newborderpacked"
 				ds.b	8	; safety for unLha overrun
 
+customOptionsBuffer:
+quakeMouse:			dc.b	0
+alwaysRun			dc.b	0
+invertMouse:			dc.b	0
+c2pOutput:			dc.b	0
+
 ; KEY OPTIONS:
 CONTROLBUFFER:
 turn_left_key:
@@ -395,7 +402,8 @@ next_weapon_key:
 				dc.b	13
 frame_limit_key:
 				dc.b	$56
-
+showFPS_key:
+				dc.b	$57
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0
 tempslkey:		dc.b	0
@@ -529,33 +537,61 @@ READMAINMENU:
 ; bsr PUTINLINE
 ; bsr JUSTDRAWIT
 ; bra .rdlop
+***************************************************************
+;moved this to the third menu option AL
+				; tst.w	d0;maybe make a level select menu here rather than start the game?
+				; bne.s	.nonextlev
 
-.nonextlev:
+				; bsr	cycleLevel
+				
+				; lea		mnu_MYMAINMENU,a0
+				; bsr		MYOPENMENU
 
+				; bsr		WAITREL
+				; bra		READMAINMENU;.rdlop
+
+; .nonextlev:
+
+				; cmp.w	#1,d0
+				; bne		.noopt
+
+				; bra		MASTERMENU
+
+; .noopt:
+***************************************************************
+; cmp.w #5,d0
+; bne.s .noqui
+; st SHOULDQUIT
+; bra playgame
+;.noqui
+***************************************************************
+				tst.w	d0;cmp.w	#0,d0
+				beq		playgame
+***************************************************************
 				cmp.w	#1,d0
 				bne		.noopt
 
 				bra		MASTERMENU
 
 .noopt:
+***************************************************************
+				cmp.w	#2,d0;tst.w	d0;maybe make a level select menu here rather than cycle the level?
+				bne.s	.nonextlev
 
-; cmp.w #5,d0
-; bne.s .noqui
-; st SHOULDQUIT
-; bra playgame
-;.noqui
+				bsr	levelMenu;cycleLevel
 
-				cmp.w	#2,d0
-				beq		playgame
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
 
+				bsr		WAITREL
+				bra		READMAINMENU;.rdlop
+
+.nonextlev:
+***************************************************************
 				cmp.w	#3,d0
 				bne		.nocontrol
 
 				bsr		CHANGECONTROLS
-
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #0,OPTNUM
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
@@ -564,20 +600,9 @@ READMAINMENU:
 				bra		.rdlop
 
 .nocontrol:
-
-********************************
-
+***************************************************************
 				cmp.w	#4,d0
 				bne		.nocred
-; bsr SHOWCREDITS
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-;
-; bsr HIGHLIGHT
-;
-; bsr WAITREL
-; bra .rdlop
 
 				;jsr		mnu_viewcredz
 				lea		mnu_MYMAINMENU,a0
@@ -585,18 +610,12 @@ READMAINMENU:
 
 				bra		.rdlop
 
-********************************
-
 .nocred:
-
+***************************************************************
 				cmp.w	#5,d0
 				bne		.noload
 
 				jsr		LOADPOSITION
-
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
@@ -605,17 +624,12 @@ READMAINMENU:
 				bra		.rdlop
 
 .noload:
+***************************************************************
 				cmp.w	#6,d0
-				bne		playgame
+				bne		.nosave
 				bsr		WAITREL
 
 				jsr		SAVEPOSITION
-
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-;
-; bsr HIGHLIGHT
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
@@ -623,7 +637,20 @@ READMAINMENU:
 				bsr		WAITREL
 				bra		.rdlop
 
+.nosave:
+***************************************************************
+				cmp.w	#7,d0
+				bne		playgame
+				bsr		WAITREL
 
+				bsr		customOptions
+
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
+
+				bsr		WAITREL
+				bra		.rdlop
+***************************************************************
 ;
 ; move.l #PASSWORDLINE+12,a0
 ; moveq #15,d2
@@ -710,7 +737,216 @@ READMAINMENU:
 ; bsr HIGHLIGHT
 ;
 ; bra .rdlop
+***************************************************************
+; cycleLevel:
+				
+				; add.w	#1,MAXLEVEL
+				; move.w	MAXLEVEL,d0
+				; cmp.w	#16,d0
+				; blt		.nowrap
+				; moveq	#0,d0
+				; move.w	d0,MAXLEVEL
+; .nowrap:
+; ; and.w #$f,d0
+				; ;move.w	d0,LEVELSELECTED
+				; move.l	#mnu_CURRENTLEVELLINEM,a1
+				; muls	#40,d0
+				; move.l	GLF_DatabasePtr_l,a0
+				; add.l	#GLFT_LevelNames_l,a0
+				; add.l	d0,a0
+				; bsr		PUTINLINE
 
+				; ;lea		mnu_MYMASTERMENU,a0
+				; ;jsr		mnu_redraw
+
+				; rts
+***************************************************************
+;fixme: there are better ways to do this, but it works.AL
+levelMenu:
+				lea		mnu_MYLEVELMENU,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYLEVELMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	levelMenu2
+				
+				cmp.w	#0,d0
+				bne.s	.sl2
+				move.w	#0,MAXLEVEL
+				bra	.levelSelectDone
+.sl2
+				cmp.w	#1,d0
+				bne.s	.sl3
+				move.w	#0,MAXLEVEL
+				add.w	#1,MAXLEVEL
+				bra	.levelSelectDone
+.sl3
+				cmp.w	#2,d0
+				bne.s	.sl4
+				move.w	#0,MAXLEVEL
+				add.w	#2,MAXLEVEL
+				bra	.levelSelectDone
+.sl4				
+				cmp.w	#3,d0
+				bne.s	.sl5
+				move.w	#0,MAXLEVEL
+				add.w	#3,MAXLEVEL
+				bra	.levelSelectDone
+.sl5				
+				cmp.w	#4,d0
+				bne.s	.sl6
+				move.w	#0,MAXLEVEL
+				add.w	#4,MAXLEVEL
+				bra	.levelSelectDone
+.sl6				
+				cmp.w	#5,d0
+				bne.s	.sl7
+				move.w	#0,MAXLEVEL
+				add.w	#5,MAXLEVEL
+				bra	.levelSelectDone
+.sl7				
+				cmp.w	#6,d0
+				bne.s	.sl8
+				move.w	#0,MAXLEVEL
+				add.w	#6,MAXLEVEL
+				bra	.levelSelectDone
+.sl8				
+				cmp.w	#7,d0
+				bne.s	.levelSelectDone
+				move.w	#0,MAXLEVEL
+				add.w	#7,MAXLEVEL
+.levelSelectDone
+				rts
+
+levelMenu2:
+				lea		mnu_MYLEVELMENU2,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYLEVELMENU2,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.levelSelectDone
+				
+				cmp.w	#0,d0
+				bne.s	.sl2
+				move.w	#8,MAXLEVEL
+				bra	.levelSelectDone
+.sl2
+				cmp.w	#1,d0
+				bne.s	.sl3
+				move.w	#0,MAXLEVEL
+				add.w	#9,MAXLEVEL
+				bra	.levelSelectDone
+.sl3
+				cmp.w	#2,d0
+				bne.s	.sl4
+				move.w	#0,MAXLEVEL
+				add.w	#10,MAXLEVEL
+				bra	.levelSelectDone
+.sl4				
+				cmp.w	#3,d0
+				bne.s	.sl5
+				move.w	#0,MAXLEVEL
+				add.w	#11,MAXLEVEL
+				bra	.levelSelectDone
+.sl5				
+				cmp.w	#4,d0
+				bne.s	.sl6
+				move.w	#0,MAXLEVEL
+				add.w	#12,MAXLEVEL
+				bra	.levelSelectDone
+.sl6				
+				cmp.w	#5,d0
+				bne.s	.sl7
+				move.w	#0,MAXLEVEL
+				add.w	#13,MAXLEVEL
+				bra	.levelSelectDone
+.sl7				
+				cmp.w	#6,d0
+				bne.s	.sl8
+				move.w	#0,MAXLEVEL
+				add.w	#14,MAXLEVEL
+				bra	.levelSelectDone
+.sl8				
+				cmp.w	#7,d0
+				bne.s	.levelSelectDone
+				move.w	#0,MAXLEVEL
+				add.w	#15,MAXLEVEL
+.levelSelectDone
+				rts
+***************************************************************
+customOptions:
+;fixme: there are better ways to do this, but it works (of sorts).AL
+.redraw
+; copy current setting over to menu
+				move.l	#customOptionsBuffer,a0
+				move.l	#optionLines+17,a1
+				moveq	#3,d1
+.copyOpts
+				move.b	(a0)+,d0
+				add.b	#132,d0		;start of the keyboard layout
+				add.b	#24,d0		;cos i and o look like 1 and 0 in the menu font
+				move.b	d0,(a1)
+				add.l	#21,a1		;end of the line/start of next i guess
+				dbra	d1,.copyOpts
+
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		MYOPENMENU
+.rdloop
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.customOptionsDone
+
+				cmp.w	#0,d0
+				bne.s	.co2
+				not.b	quakeMouse
+				bra	.w8
+.co2
+				cmp.w	#1,d0
+				bne.s	.co3
+				not.b	alwaysRun
+				bra	.w8
+.co3
+				cmp.w	#2,d0
+				bne.s	.co4
+				not.b	invertMouse
+				bra	.w8
+.co4
+				cmp.w	#3,d0
+				bne.s	.co5
+				not.b	c2pOutput
+				bra	.w8
+.co5
+				cmp.w	#4,d0
+				bne.s	.co6
+				;opt5
+				bra	.w8
+.co6
+				cmp.w	#5,d0
+				bne.s	.co7
+				;opt6
+				bra	.w8
+.co7
+				cmp.w	#6,d0
+				bne.s	.co8
+				;opt7
+				bra	.w8
+.co8
+				cmp.w	#7,d0
+				bne.s	.w8
+				;opt8
+.w8
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				jsr		mnu_redraw
+				bra		.redraw
+.customOptionsDone
+				rts
+***************************************************************
 playgame:
 				move.w	MAXLEVEL,PLOPT
 				rts

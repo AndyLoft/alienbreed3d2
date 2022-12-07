@@ -1692,7 +1692,7 @@ mnu_MYMAINMENU:
 				dc.l	mnu_MYMAINMENUTEXT
 				dc.w	0,40
 				dc.w	20
-				dc.w	7
+				dc.w	8
 				dc.l	0,0
 				dc.l	0,0
 				dc.l	0,0
@@ -1705,20 +1705,111 @@ mnu_MYMAINMENUTEXT:
 ;                        12345678901234567890
 				dc.b	'                    ',1
 				dc.b	'                    ',1
+				dc.b	'     PLAY  GAME     ',1
+				dc.b	'      1 PLAYER      ',1
 mnu_CURRENTLEVELLINE:
 				dc.b	'                    ',1
-				dc.b	'      1 PLAYER      ',1
-				dc.b	'     PLAY  GAME     ',1
 				dc.b	'  CONTROL  OPTIONS  ',1
 				dc.b	'    GAME CREDITS    ',1
 				dc.b	'   LOAD  POSITION   ',1
 				dc.b	'   SAVE  POSITION   ',1
-				dc.b	'                    ',1
+				dc.b	'   CUSTOM OPTIONS   ',1
 				dc.b	'                    ',1
 				dc.b	'                    ',0
 
 				EVEN
+***************************************************************
+mnu_MYLEVELMENU:
+				dc.w	0,0
+				dc.l	mnu_MYLEVELMENUTEXT
+				dc.w	0,40
+				dc.w	20
+				dc.w	9
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
 
+mnu_MYLEVELMENUTEXT:
+;					 12345678901234567890
+				dc.b	'                    ',1
+				dc.b	'                    ',1
+				dc.b	'      LEVEL  A      ',1
+				dc.b	'      LEVEL  B      ',1
+				dc.b	'      LEVEL  C      ',1
+				dc.b	'      LEVEL  D      ',1
+				dc.b	'      LEVEL  E      ',1
+				dc.b	'      LEVEL  F      ',1
+				dc.b	'      LEVEL  G      ',1
+				dc.b	'      LEVEL  H      ',1
+				dc.b	'     NEXT  PAGE     ',1
+				dc.b	'                    ',0
+
+				EVEN
+
+mnu_MYLEVELMENU2:
+				dc.w	0,0
+				dc.l	mnu_MYLEVELMENUTEXT2
+				dc.w	0,40
+				dc.w	20
+				dc.w	9
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+				dc.l	0,0
+
+mnu_MYLEVELMENUTEXT2:
+;					 12345678901234567890
+				dc.b	'                    ',1
+				dc.b	'                    ',1
+				dc.b	'      LEVEL  I      ',1
+				dc.b	'      LEVEL  J      ',1
+				dc.b	'      LEVEL  K      ',1
+				dc.b	'      LEVEL  L      ',1
+				dc.b	'      LEVEL  M      ',1
+				dc.b	'      LEVEL  N      ',1
+				dc.b	'      LEVEL  O      ',1
+				dc.b	'      LEVEL  P      ',1
+				dc.b	'     MAIN  MENU     ',1
+				dc.b	'                    ',0
+
+				EVEN
+mnu_MYCUSTOMOPTSMENU:
+				dc.w	0,0
+				dc.l	mnu_MYCUSTOMOPTSTEXT
+				dc.w	0,40
+				dc.w	20
+				dc.w	9
+				ds.l	18
+
+;was going to use these to change the text in the menu but bodged it.
+; optOn:
+	; dc.b 'on ',1
+; optOff:
+	; dc.b 'off',1
+
+mnu_MYCUSTOMOPTSTEXT:
+;					 12345678901234567890
+				dc.b	'                    ',1
+				dc.b	'                    ',1
+optionLines:				;12345678901234567890
+				dc.b	'  -quake mouse      ',1;off  ',1
+				dc.b	'  --always run      ',1;off  ',1
+				dc.b	'  invert mouse      ',1;off  ',1
+				dc.b	'  --c2p--off--      ',1;off  ',1
+				dc.b	'  option     5  n/a ',1
+				dc.b	'  option     6  n/a ',1
+				dc.b	'  option     7  n/a ',1
+				dc.b	'  option     8  n/a ',1
+				dc.b	'     MAIN  MENU     ',0
+				EVEN
+***************************************************************
 mnu_MYCONTROLSONE:
 				dc.w	0,0
 				dc.l	mnu_MYCONTROLTEXTONE

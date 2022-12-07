@@ -75,6 +75,10 @@ PLR1_mouse_control
 
 ;the right mouse button triggers the next_weapon key
 				move.b	next_weapon_key,d7
+				tst.b	quakeMouse
+				beq.s	.notQuake
+				move.b	forward_key,d7
+.notQuake
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
@@ -191,6 +195,18 @@ gunheldlast:
 				dc.w	0
 
 PLR1_alwayskeys
+
+				move.l	#KeyMap,a5
+				moveq	#0,d7
+
+				move.b	showFPS_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.noChange
+				clr.b	(a5,d7.w)
+				not.b	showFPS
+				jsr		SetupRenderbufferSize
+.noChange
+
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 
@@ -493,17 +509,37 @@ PLR1_keyboard_control:
 
 				move.w	Plr1_SnapAngPos_w,d0
 				move.w	Plr1_SnapAngSpd_w,d3
+***************************************************************
+				tst.b	alwaysRun
+				bne.s	.alwaysRun
 				move.w	#35,d1
 				move.w	#2,d2
 				move.w	#10,TURNSPD
 				moveq	#0,d7
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	nofaster
+				beq.s	.nofaster
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,TURNSPD
-nofaster:
+.nofaster:
+				bra	.faster
+.alwaysRun:
+
+				move.w	#60,d1
+				move.w	#3,d2
+				move.w	#14,TURNSPD
+
+				moveq	#0,d7
+				move.b	run_key,d7
+				tst.b	(a5,d7.w)
+
+				beq.s	.faster
+				move.w	#35,d1
+				move.w	#2,d2
+				move.w	#10,TURNSPD
+.faster:
+***************************************************************
 				tst.b	Plr1_Squished_b
 				bne.s	.halve
 				tst.b	Plr1_Ducked_b

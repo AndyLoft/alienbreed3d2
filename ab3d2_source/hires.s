@@ -637,6 +637,15 @@ noclips:
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
 
+****************
+				;hack to stop the freeze when restart level at 50fps
+				;empty DisplayMsgPort
+				;so the starting point is the same every time
+.clrMsgPort			move.l	DisplayMsgPort,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+****************
 				clr.w	ScreenBufferIndex
 
 .tryAgain		move.l	ScreenBuffers,a1
@@ -1277,8 +1286,12 @@ waitmaster:
 .failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
 
 .screenSwapDone
+
+				tst.b	showFPS
+				beq.s	.noFPS
 				jsr	FPS_time2				;fps counter c/o Grond
 *****************************************************************
+.noFPS
 				jsr	FPS_time1				;fps counter c/o Grond
 
 				move.l	#SMIDDLEY,a0

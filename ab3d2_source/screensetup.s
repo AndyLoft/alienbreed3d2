@@ -270,8 +270,48 @@ FPS_time2:
 		jsr	_LVOText(a6)
 		movem.l	(sp)+,d2/a2/a6
 		rts
+********************************************************************************
+quitGameOption:
+		movem.l	d2/a2/a5/a6,-(sp)
+;move.l	gfxbase,a6
+.w8
+		move.l	MainScreen,a0
+		lea	sc_RastPort(a0),a1
+		lea	sc_ViewPort(a0),a0
+		move.l	vp_RasInfo(a0),a0
+		move.w	ri_RyOffset(a0),d1
+		move.l	a1,a2
+		clr.l	d0
+		add.w	#20,d1
+		ext.l	d1
+		CALLGRAF Move
 
+		lea	QUITGAMEOPT_outputstring,a0
+		move.l	a2,a1
+		moveq	#14,d0
+		jsr	_LVOText(a6)
+.loop
 
+		move.l	#KeyMap,a5
+
+		tst.b	$36(a5)
+		beq	.op2
+		move.b	#1,doQuit
+		bra	.ok
+.op2
+		tst.b	$15(a5)
+		beq	.op1
+		move.b	#0,doQuit
+		bra	.ok
+.op1
+		bra	.loop
+.ok
+
+		movem.l	(sp)+,d2/a2/a5/a6
+		rts
+********************************************************************************
+QUITGAMEOPT_outputstring:		dc.b	'QUIT GAME? Y/N',0
+doQuit:		dc.b	0
 ********************************************************************************
 
 				align	4
@@ -286,8 +326,8 @@ MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_BitMap,MainBitmap0
 				dc.l	SA_Type,CUSTOMSCREEN
 				dc.l	SA_Quiet,1
+				dc.l	SA_ShowTitle,0
 				dc.l	SA_AutoScroll,0
-				dc.l	SA_FullPalette,1
 				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
@@ -313,6 +353,7 @@ MainWindowTags	dc.l	WA_Left,0
 				dc.l	WA_Height,256
 				dc.l	WA_CustomScreen
 MainWTagScreenPtr dc.l	0						; will fill in screen pointer later
+				dc.l	WA_Title,0
 				dc.l	WA_Activate,1
 				dc.l	WA_Borderless,1
 				dc.l	WA_RMBTrap,1			; prevent menu rendering
@@ -349,6 +390,7 @@ VidControlTags	dc.l	VTAG_USERCLIP_SET,1
 timerrequest:	ds.b	IOTV_SIZE
 timername:	dc.b	"timer.device",0
 FPS_outputstring:	dcb.b	10
+showFPS:	dc.b	0
 				align	4
 timerbase:	dc.l	0
 timerflag:	dc.l	-1
