@@ -4892,6 +4892,10 @@ ReadMouse:
 				clr.l	d0
 				clr.l	d1
 				move.w	$a(a6),d0
+				tst.b	invertMouse
+				beq.s	.notInverted
+				not.w	d0;to invert mouse look
+.notInverted
 				lsr.w	#8,d0
 				ext.l	d0
 				move.w	d0,d3
