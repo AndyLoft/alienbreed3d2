@@ -2248,7 +2248,10 @@ plr1only:
 				move.l	#KeyMap,a5
 				tst.b	$45(a5)
 				beq.s	noend
-
+********************************************************************************
+				jsr	quitGameOption
+				tst.b	doQuit
+				bne.s	noend
 				cmp.b	#'s',mors
 				beq		plr2quit
 
@@ -2258,6 +2261,8 @@ plr1only:
 plr2quit:
 				st		SLAVEQUITTING
 noend:
+				move.b	#0,doQuit
+********************************************************************************
 
 				tst.b	MASTERQUITTING
 				beq.s	.noquit
