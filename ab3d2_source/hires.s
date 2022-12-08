@@ -40,7 +40,7 @@ CHEESEY			equ		0
 CD32VER			equ		0
 
 FS_WIDTH		equ		320
-FS_HEIGHT		equ		232
+FS_HEIGHT		equ		240;232
 SMALL_WIDTH		equ		192
 SMALL_HEIGHT	equ		160
 

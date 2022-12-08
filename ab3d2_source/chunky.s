@@ -36,7 +36,7 @@ NEWCHUNKY
 
 				move.w	#SCREENWIDTH,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
-				move.w	#232,d1
+				move.w	#FS_HEIGHT-8,d1;#232,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				move.l	#(SCREENWIDTH/8)*256,d5
@@ -65,7 +65,7 @@ NEWCHUNKY
 
 				move.w	#FS_WIDTH/2,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
-				move.w	#FS_HEIGHT,d1
+				move.w	#FS_HEIGHT-8,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				moveq.l	#0,d2
@@ -86,7 +86,7 @@ NEWCHUNKY
 .doublewidthheightFullscreen
 				move.w	#FS_WIDTH/2,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
-				move.w	#FS_HEIGHT/2,d1
+				move.w	#(FS_HEIGHT-8)/2,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				ble		.nothingLeft
@@ -111,7 +111,7 @@ NEWCHUNKY
 				move.w	WIDESCRN,d1				; y, height of black border top/bottom
 				add.w	d1,d1
 				move.l	#FS_WIDTH,d2			; width
-				move.l	#FS_HEIGHT/2,d3			; height
+				move.l	#(FS_HEIGHT-8)/2,d3			; height
 				sub.w	d1,d3					; top letterbox
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
 				ble		.nothingLeft
