@@ -256,7 +256,7 @@ NEWCHUNKYTEL:
 				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
 
 				move.w	WIDESCRN,d7
-				move.l	#FS_HEIGHT-1,d1			; height of area to convert
+				move.l	#(FS_HEIGHT-8)-1,d1			; height of area to convert
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
