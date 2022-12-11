@@ -2071,6 +2071,16 @@ ITSATEL:
 				move.l	(a2,d0.w*4),a2
 				add.l	LEVELDATA,a2
 				move.l	a2,objroom
+;adds sound for aliens that use teleports - taken from the player teleport in hires.s
+;only plays at a consant volume, not sure how volume over disance should be calculated.
+				SAVEREGS
+				move.w	#0,Noisex
+				move.w	#0,Noisez
+				move.w	#26,Samplenum
+				move.w	#10,Noisevol;#100,Noisevol
+				move.w	#$fff9,IDNUM
+				jsr		MakeSomeNoise
+				GETREGS
 
 				rts
 
