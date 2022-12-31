@@ -115,6 +115,10 @@ SCALE			MACRO
 * 16(a0)=leftbot
 * 18(a0)=rightbot
 
+; Just one copy of the iteration table. Should improve cache locality if nothing else.
+				align 4
+draw_IterationTable_vw:
+				incbin	"includes/iterfile" ; todo - move to data, change access via a3?
 
 Doleftend:
 				move.w	leftclip,d0
@@ -127,21 +131,22 @@ Doleftend:
 				rts
 
 sometodraw:
-				move.w	itertab(pc,d1.w*4),d7
+				;move.w	draw_IterationTable_vw(pc,d1.w*4),d7
+				;swap	d0
+				;move.w	draw_IterationTable_vw+2(pc,d1.w*4),d6
+
+				; read both words from the iteration table in one go. Do a small bit of juggling
+				; of instruction order, may help on 060 (TBC)
+				move.l	draw_IterationTable_vw(pc,d1.w*4),d7
 				swap	d0
-				move.w	itertab+2(pc,d1.w*4),d6
+				move.w	d7,d6
 				clr.w	d0
 				swap	d1
+				swap	d7
 				clr.w	d1
 				asr.l	d6,d1
 				move.l	d1,(a0)
 
-				bra		pstit
-
-itertab:
-				incbin	"includes/iterfile"
-
-pstit:
 				moveq	#0,d1
 				move.w	4(a0),d1
 				moveq	#0,d2
@@ -220,10 +225,10 @@ screendividethru:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -237,14 +242,7 @@ screendividethru:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
+
 				add.w	angbright(pc),d6
 				bge.s	.brnotneg
 				moveq	#0,d6
@@ -255,16 +253,9 @@ screendividethru:
 				move.w	#32,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	.ffscrpickhowbright(pc,d6*2),a2
-; and.b #$fe,d6
-; add.w .ffscrpickhowbright(pc,d6*2),a4
-
-; btst #0,d0
-; beq .nobrightswap
-; exg a2,a4
-;.nobrightswap:
 
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdrawthru
@@ -281,7 +272,7 @@ screendividethru:
 screendivide:
 				or.l	#$ffff0000,d7
 				move.w	leftclipandlast(pc),d6
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3
 				move.l	4(a0),a4
@@ -333,15 +324,15 @@ outofcalc:
 				rts
 
 .somethingtodraw:
-				move.l	#consttab,a1
-				move.l	#WorkSpace,a0
+				move.l	#ConstantTable_vl,a1
+				move.l	#Sys_Workspace_vl,a0
 				tst.b	Vid_FullScreen_b
 				bne		screendivideFULL
 
 ; tst.b seethru
 ; bne screendividethru
 
-				;tst.b	DOUBLEWIDTH
+				;tst.b	Vid_DoubleWidth_b
 				;bne		scrdrawlopDOUB
 				bra		scrdrawlop
 
@@ -372,10 +363,10 @@ scrdrawlop:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -390,14 +381,6 @@ scrdrawlop:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -412,7 +395,7 @@ scrdrawlop:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbright(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -462,10 +445,10 @@ scrdrawlopDOUB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -480,14 +463,6 @@ scrdrawlopDOUB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -502,7 +477,7 @@ scrdrawlopDOUB:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightD(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -536,7 +511,7 @@ ffscrpickhowbrightD:
 				SCALE
 
 screendivideFULL:
-				tst.b	DOUBLEWIDTH
+				tst.b	Vid_DoubleWidth_b
 				bne		scrdrawlopFULLDOUB
 
 scrdrawlopFULL:
@@ -544,11 +519,6 @@ scrdrawlopFULL:
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
-
-; bra pastscrinto
-;
-;
-;pastscrinto
 
 				swap	d1
 
@@ -561,10 +531,10 @@ scrdrawlopFULL:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -579,14 +549,6 @@ scrdrawlopFULL:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -601,7 +563,7 @@ scrdrawlopFULL:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightFULL(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -635,11 +597,6 @@ scrdrawlopFULLDOUB:
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
-; bra pastscrinto
-;
-;
-;pastscrinto
-
 				swap	d1
 
 				move.w	d1,d6
@@ -651,10 +608,10 @@ scrdrawlopFULLDOUB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData			;
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -669,14 +626,6 @@ scrdrawlopFULLDOUB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -691,7 +640,7 @@ scrdrawlopFULLDOUB:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightFULLDOUB(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -711,14 +660,14 @@ scrdrawlopFULLDOUB:
 ffscrpickhowbrightFULLDOUB:
 				SCALE
 
-divthreetab:	;		stores					x/3 and x mod 3 for x=0...660
-val				SET		0
-				REPT	220
-				dc.b	val,0
-				dc.b	val,1
-				dc.b	val,2
-val				SET		val+1
-				ENDR
+;DivThreeTable_vb:	;		stores					x/3 and x mod 3 for x=0...660
+;val				SET		0
+;				REPT	220
+;				dc.b	val,0
+;				dc.b	val,1
+;				dc.b	val,2
+;val				SET		val+1
+;				ENDR
 
 StripData:		dc.w	0
 
@@ -739,7 +688,6 @@ StripData:		dc.w	0
 * d4=sl d5=el
 * a1 = strip buffer
 
-storage:		ds.l	500
 ********************************************************************************
 
 ;******************************************************************
@@ -787,7 +735,7 @@ storage:		ds.l	500
 ;
 ;				move.w	(a0)+,d0				; centre of rotation
 ;				move.w	(a0)+,d1				; point on arc
-;				move.l	#Rotated,a1
+;				move.l	#Rotated_vl,a1
 ;				move.l	#xmiddle,a2
 ;				move.l	(a1,d0.w*8),d2
 ;				move.l	d2,18(a2)
@@ -815,7 +763,7 @@ storage:		ds.l	500
 ;				move.l	#subdividevals,a3
 ;				move.l	(a3,d4.w*4),shift(a2)
 ;
-;				move.l	#walltiles,a3
+;				move.l	#Draw_WallTexturePtrs_vl,a3
 ;				add.l	(a0)+,a3
 ;				adda.w	wallyoff,a3
 ;				move.l	a3,fromtile
@@ -827,8 +775,8 @@ storage:		ds.l	500
 ;				sub.l	d6,topofwall
 ;				sub.l	d6,botofwall
 ;
-;				move.l	#databuffer,a1
-;				move.l	#SineTable,a3
+;				move.l	#DataBuffer1_vl,a1
+;				move.l	#SinCosTable_vw,a3
 ;				lea		2048(a3),a4
 ;				moveq	#0,d0
 ;				moveq	#0,d1
@@ -889,7 +837,7 @@ storage:		ds.l	500
 ;;prot3:			dc.w	0
 ;
 ;curvecalc:
-;				move.l	#databuffer,a1
+;				move.l	#DataBuffer1_vl,a1
 ;				move.w	count(a2),d7
 ;				subq	#1,d7
 ;.findfirstinfront:
@@ -909,7 +857,7 @@ storage:		ds.l	500
 ;; d6=left angbright
 ;				divs	d0,d1
 ;
-;				asr.w	d1					; DOUBLEWIDTH test
+;				asr.w	d1					; Vid_DoubleWidth_b test
 ;
 ;				add.w	Vid_CentreX_w,d1
 ;
@@ -935,7 +883,7 @@ storage:		ds.l	500
 ;				rts
 ;
 ;.infront:
-;				move.l	#storage,a0
+;				move.l	#Storage_vl,a0
 ;				move.l	(a1),d3
 ;				move.w	6(a1),d5
 ;				add.w	8(a1),d6
@@ -943,7 +891,7 @@ storage:		ds.l	500
 ;				move.w	d6,angbright
 ;				divs	d2,d3
 ;
-;				asr.w	d3					; DOUBLEWIDTH test
+;				asr.w	d3					; Vid_DoubleWidth_b test
 ;
 ;				add.w	Vid_CentreX_w,d3
 ;				move.w	strtop(pc),12(a0)
@@ -960,7 +908,7 @@ storage:		ds.l	500
 ;				move.w	d6,18(a0)
 ;				move.w	d3,2(a1)
 ;				blt.s	.alloffleft
-;				cmp.w	RIGHTX,d1
+;				cmp.w	Vid_RightX_w,d1
 ;				bgt.s	.alloffleft
 ;
 ;				cmp.w	d1,d3
@@ -1169,7 +1117,7 @@ nh4:
 				subq	#1,d7
 				move.w	d7,multcount
 
-				move.l	#databuffer,a3
+				move.l	#DataBuffer1_vl,a3
 				move.l	a0,d0
 				move.l	a2,d2
 
@@ -1206,8 +1154,8 @@ nh4:
 * Decide how often to subdivide by how far away the wall is, and
 * how perp. it is to the player.
 
-				move.l	#databuffer,a0
-				move.l	#databuffer2,a1
+				move.l	#DataBuffer1_vl,a0
+				move.l	#DataBuffer2_vl,a1
 
 				move.w	iters,d6
 				blt		noiters
@@ -1316,7 +1264,7 @@ CalcAndDraw:
 
 .infront:
 				ext.l	d2
-				move.l	#storage,a0
+				move.l	#Storage_vl,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
@@ -1357,11 +1305,11 @@ CalcAndDraw:
 				add.w	d2,d0
 				bset	d0,d1
 				btst	#4,d3
-				beq.s	.nodoor
+				beq.s	.no_door
 				addq	#2,d0
 				bset	d0,d1
 
-.nodoor:
+.no_door:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
 
@@ -1393,7 +1341,7 @@ computeloop2:
 
 .infront:
 				ext.l	d2
-				move.l	#storage,a0
+				move.l	#Storage_vl,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
@@ -1462,11 +1410,6 @@ leftwallTOPbright: dc.w	0
 rightwallTOPbright: dc.w 0
 strtop:			dc.w	0
 strbot:			dc.w	0
-
-databuffer:
-				ds.l	1600
-databuffer2:
-				ds.l	1600
 
 ***********************************
 
@@ -1683,29 +1626,11 @@ simplewallPACK2:
 				dbra	d6,simplewallPACK2
 				rts
 
-;gotoendnomult:
-; movem.l d0/d1/d2/d3/d4/d7,-(a7)
-; add.l timeslarge(pc,d5.w*4),a3
-; move.w d5,d4
-; move.l 4(a1,d2.w*8),d0
-; move.l (a1,d2.w*8),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; move.w wallyoff(pc),d4
-; add.w #44,d4
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble cliptopusesimple
-;.notsimple:
-; bra cliptop
-
 ; ATTENION: for some reason the order of these variables is important
 ; There's code that expects	these in the right order to allow for movem
 				align	4
 TOTHEMIDDLE:	dc.w	0
-BOTTOMY:		dc.w	0
+Vid_BottomY_w:		dc.w	0
 Vid_CentreY_w:		dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
@@ -1714,7 +1639,7 @@ STOPOFFSET:		dc.w	0
 SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2		; renderbuffer offset to middle line
 
 gotoend:
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwall
 				sub.w	d5,d6					; end-start; height to draw?
 				ble		nostripq
@@ -1728,14 +1653,6 @@ gotoend:
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2			; fetch (a1) at d2*8
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1743,11 +1660,6 @@ gotoend:
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4		; start texel offset in strip
 				move.w	VALAND,d7
 				and.w	d7,d4					; vertical texture coordinate clamp/wrap
@@ -1796,14 +1708,6 @@ doubwall
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1811,11 +1715,6 @@ doubwall
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1869,7 +1768,7 @@ ScreenWallstripdrawBIG:
 .nsbd2:
 
 gotoendBIG
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwallBIG
 				sub.w	d5,d6					; d6 = height to draw.
 				ble		nostripq
@@ -1885,14 +1784,6 @@ gotoendBIG
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1900,11 +1791,6 @@ gotoendBIG
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1947,14 +1833,6 @@ doubwallBIG:
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1962,11 +1840,6 @@ doubwallBIG:
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -2322,8 +2195,8 @@ OTHERZONE:		dc.w	0
 				; Is this THE wall draw entrypoint?
 				; a0 pointing to wall description?
 itsawalldraw:
-				move.l	#Rotated,a5
-				move.l	#OnScreen,a6
+				move.l	#Rotated_vl,a5
+				move.l	#OnScreen_vl,a6
 
 				move.w	(a0)+,d0				; left point index
 				move.w	(a0)+,d2				; right point index
@@ -2345,11 +2218,11 @@ itsawalldraw:
 				move.w	d1,totalyoff
 
 				move.w	(a0)+,d1
-				move.l	#walltiles,a3
+				move.l	#Draw_WallTexturePtrs_vl,a3
 				move.l	(a3,d1.w*4),a3
-				move.l	a3,PaletteAddr
+				move.l	a3,Draw_PalettePtr_l
 				add.l	#64*32,a3
-				move.l	a3,ChunkAddr
+				move.l	a3,Draw_ChunkPtr_l
 
 ;move.w (a0)+,d1
 ;add.w ZoneBright,d1
@@ -2398,7 +2271,7 @@ cantell:
 				bra		pastclip
 
 cliptotestfirstbehind:
-				;	a5 Rotated
+				;	a5 Rotated_vl
 				move.l	(a5,d0*8),d3			; prerotated points,
 				sub.l	(a5,d2*8),d3			; line dx, integer part ?
 				move.w	6(a5,d0*8),d6
@@ -2476,7 +2349,7 @@ pastclip:
 				ext.l	d4
 				add.l	d4,d6
 
-				move.w	RIGHTX,d4
+				move.w	Vid_RightX_w,d4
 				ext.l	d4
 				cmp.l	d4,d3
 				bge		wallfacingaway
@@ -2487,31 +2360,6 @@ pastclip:
 
 cant_tell:
 
-; move.l a1,a4
-; move.w #31,d6
-; move.l #0,d3
-;.emptylop:
-; move.l d3,(a4)+
-; dbra d6,.emptylop
-
-; move.w rightclip(pc),d6
-; st (a1,d6)
-; move.w leftclip(pc),d6
-; st -1(a1,d6)
-
-; muls sinval(pc),d1
-; muls cosval(pc),d4
-; add.l d1,d4
-; add.l d4,d4
-; swap d4
-; neg.w d4
-; move.w d4,d6
-; asr.w #1,d4
-; sub.w d4,angbright
-; and.b #$fe,d4
-; asl.w #2,d4
-; asl.w #2,d6
-
 				movem.l	d7/a0/a5/a6,-(a7)
 				move.l	(a5,d0*8),a0
 ; add.l a0,a0
@@ -2520,8 +2368,8 @@ cant_tell:
 ; add.l a2,a2
 				move.w	6(a5,d2*8),d3
 
-				move.l	#CurrentPointBrights,a5
-				tst.b	DOUPPER
+				move.l	#CurrentPointBrights_vl,a5
+				tst.b	Draw_DoUpper_b
 				beq.s	.notupper
 				add.w	#4,a5
 .notupper

@@ -1,15 +1,13 @@
-
+				align 4
 tmplistgraph:	dc.l	0
 
 OrderZones:
-
-				move.l	ListOfGraphRooms,a0
+				move.l	Lvl_ListOfGraphRoomsPtr_l,a0
 ; a0=list of rooms to draw.
 
 				move.l	a0,tmplistgraph
-
-				move.l	#ToDrawTab,a1
-				move.l	#WorkSpace,a4
+				move.l	#zone_ToDrawTable_vw,a1
+				move.l	#Sys_Workspace_vl,a4
 				move.l	a1,a3
 
 				moveq	#99,d0
@@ -19,7 +17,7 @@ OrderZones:
 				dbra	d0,.clrtab
 
 				move.l	a0,a1
-				move.l	#OrderTab,a5
+				move.l	#zone_OrderTable_vw,a5
 
 settodraw:
 				move.w	(a1),d0
@@ -39,16 +37,16 @@ nomoreset:
 ; a room to be drawn at some stage.
 
 				move.l	tmplistgraph,a0
-				move.l	#OrderTab,a2
+				move.l	#zone_OrderTable_vw,a2
 				moveq	#0,d0
 				moveq	#2,d1
 
 putinn:
 				move.w	(a0),d2
 				blt		putallin
-				move.l	ZoneGraphAdds,a1
+				move.l	Lvl_ZoneGraphAddsPtr_l,a1
 				move.l	(a1,d2.w*4),a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				addq	#8,a2
 
 				move.w	d2,2(a2)
@@ -63,10 +61,9 @@ putinn:
 putallin:
 
 				move.w	#-1,4(a2)
-
-				move.w	#1,OrderTab+4
-				move.w	#-1,OrderTab
-				move.w	#-1,OrderTab+2
+				move.w	#1,zone_OrderTable_vw+4
+				move.w	#-1,zone_OrderTable_vw
+				move.w	#-1,zone_OrderTable_vw+2
 				move.w	#2,d5					; off end of list.
 
 				move.w	#100,d7					; which ones to look
@@ -76,17 +73,14 @@ putallin:
 ; clr.b farendfound
 
 RunThroughList:
-
-				move.l	FloorLines,a1
-
+				move.l	Lvl_FloorLinesPtr_l,a1
 				move.w	2(a5),d0
-				move.l	#WorkSpace,a6
+				move.l	#Sys_Workspace_vl,a6
 				lea		(a6,d0.w*4),a6
 				move.l	(a6),d6
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	LEVELDATA,a0
-
+				add.l	Lvl_DataPtr_l,a0
 				adda.w	ZoneT_ExitList_w(a0),a0
 
 				move.l	a5,a4
@@ -98,7 +92,7 @@ RunThroughList:
 				move.w	(a5),d0
 				blt		doneallthispass
 
-				move.l	#OrderTab,a5
+				move.l	#zone_OrderTable_vw,a5
 				lea		(a5,d0.w*8),a5
 ; clr.b donesomething
 				bsr		InsertList
@@ -108,23 +102,21 @@ RunThroughList:
 doneallthispass:
 
 dontorder:
-
-				move.l	#OrderTab,a5
+				move.l	#zone_OrderTable_vw,a5
 				move.w	4(a5),d0
 				lea		(a5,d0.w*8),a5
+				move.l	#Zone_FinalOrderTable_vw,a0
 
-				move.l	#FinalOrder,a0
 showorder:
 				move.w	2(a5),(a0)+
 				move.w	4(a5),d0
 				blt.s	doneorder
-				move.l	#OrderTab,a5
+				move.l	#zone_OrderTable_vw,a5
 				lea		(a5,d0.w*8),a5
 				bra		showorder
 
 doneorder:
-
-				move.l	a0,endoflist
+				move.l	a0,Zone_EndOfListPtr_l
 
 ; move.w d7,TempBuffer
 
@@ -134,12 +126,11 @@ farendfound:	dc.b	0
 donesomething:	dc.b	0
 farendpt:		dc.l	0
 
-InsertList
+InsertList:
 				move.l	d7,-(a7)
 				moveq	#0,d7
 
-InsertLoop
-
+InsertLoop:
 				move.w	(a0)+,d0				; floor line
 				blt		allinlist
 				asl.w	#4,d0
@@ -154,7 +145,8 @@ InsertLoop
 buggergerger:
 				addq	#3,d7
 				bra		InsertLoop
-indrawlist
+
+indrawlist:
 				addq	#1,d7
 
 				btst	d7,d6
@@ -197,8 +189,7 @@ mustdo:
 * then we need to move to other side
 * of it.
 
-				move.l	#OrderTab,a3
-
+				move.l	#zone_OrderTable_vw,a3
 				move.w	(a4),d0
 				blt.s	notcloser
 
@@ -256,13 +247,6 @@ allinlist:
 ; bne.s notfoundend
 ; st farendfound
 ;notfoundend:
-
 				rts
 
-endoflist:		dc.l	0
-ToDrawTab:
-				ds.l	400
-OrderTab:		ds.l	400
-				dc.w	-1
-FinalOrder:		ds.l	400
-doneone:		dc.w	0
+

@@ -11,34 +11,6 @@
 
 IO_MAX_FILENAME_LEN	EQU 79
 
-				CNOP	0,4	;
-
-; Memory class to use for next loaded entity
-IO_MemType_l:			dc.l	0
-
-; dos.llibrary file handle
-IO_DOSFileHandle_l:		dc.l	0
-
-; Private stuff
-io_EndOfQueue_l:		dc.l	0
-
-; Array of object pointers
-io_ObjectPointers_vl:	ds.l	160
-
-; block properties
-io_BlockLength_l:		dc.l	0
-io_BlockName_l:			dc.l	0
-io_BlockStart_l:		dc.l	0
-
-; Pointer to the file extension (i.e. the substring starting at .)
-io_FileExtPointer_l:	dc.l	0
-
-io_ObjectName_vb:		ds.b	160
-io_Buffer_vb:			ds.b	80   ; todo - can these be merged ?
-
-; File info block
-io_FileInfoBlock_vb:	ds.b	fib_SIZEOF
-
 ; *****************************************************************************
 ; *
 ; * IO Queue
@@ -46,7 +18,7 @@ io_FileInfoBlock_vb:	ds.b	fib_SIZEOF
 ; *****************************************************************************
 
 IO_InitQueue:
-				move.l	#WorkSpace,io_EndOfQueue_l
+				move.l	#Sys_Workspace_vl,io_EndOfQueue_l
 				rts
 
 IO_QueueFile:
@@ -73,11 +45,13 @@ IO_FlushQueue:
 				bsr		io_FlushPass
 
 .retry:
+				tst.b	LOADEXT
+				bne		.loaded_all
 				tst.b	d6
 				beq		.loaded_all
 
 * Find first unloaded file and prompt for disk.
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 
 .find_loop:
 				tst.l	(a2)
@@ -119,13 +93,6 @@ IO_FlushQueue:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-; move.w #23,FADEAMOUNT
-; jsr FADEDOWNTITLE
-
-; move.w #3,OptScrn
-; move.w #0,OPTNUM
-; jsr DRAWOPTSCRN
-
 				jsr		mnu_setscreen
 
 				lea		mnu_askfordisk,a0
@@ -133,19 +100,6 @@ IO_FlushQueue:
 
 				jsr		mnu_clearscreen
 
-
-;.wtrel:
-; btst #7,$bfe001
-; beq.s .wtrel
-;
-;.wtclick:
-; btst #6,$bfe001
-; bne.s .wtclick
-
-; jsr CLROPTSCRN
-
-; move.w #23,FADEAMOUNT
-; jsr FADEUPTITLE
 
 				movem.l	(a7)+,d0-d7/a0-a6
 				bsr		io_FlushPass
@@ -155,7 +109,7 @@ IO_FlushQueue:
 				rts
 
 io_FlushPass:
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 				moveq	#0,d7					; loaded a file
 				moveq	#0,d6					; tried+failed
 

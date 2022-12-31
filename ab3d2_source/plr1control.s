@@ -1,8 +1,9 @@
 
-PLR1_mouse_control
-				jsr		ReadMouse
 
-				move.l	#SineTable,a0
+Plr1_MouseControl:
+				jsr		Sys_ReadMouse
+
+				move.l	#SinCosTable_vw,a0
 				move.w	Plr1_SnapAngSpd_w,d1
 				move.w	angpos,d0
 				and.w	#8190,d0
@@ -19,7 +20,8 @@ PLR1_mouse_control
 				asr.l	#1,d6
 				add.l	#1,d6
 				bra.s	.bug1
-.nobug1
+
+.nobug1:
 				asr.l	#1,d6
 .bug1:
 
@@ -28,49 +30,39 @@ PLR1_mouse_control
 				asr.l	#1,d7
 				add.l	#1,d7
 				bra.s	.bug2
-.nobug2
+
+.nobug2:
 				asr.l	#1,d7
 .bug2:
 
 				move.w	ymouse,d3
 				sub.w	oldymouse,d3
 				add.w	d3,oldymouse
-; asr.w #1,d3
-; cmp.w #50,d3
-; ble.s nofastfor
-; move.w #50,d3
-;nofastfor:
-; cmp.w #-50,d3
-; bge.s nofastback
-; move.w #-50,d3
-;nofastback:
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
 				asl.w	#7,d2
 
-				add.w	d2,PLR1_AIMSPD
+				add.w	d2,Plr1_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR1_AIMSPD
+				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR1_AIMSPD
+				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
-.nolookdown
 
+.nolookdown:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
-
-
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 ;the right mouse button triggers the next_weapon key
@@ -87,8 +79,8 @@ PLR1_mouse_control
 				btst	#CIAB_GAMEPORT0,$bfe001+ciapra ; left button
 				seq		(a5,d7.w)
 
-.cont
-				bra		PLR1_keyboard_control
+.cont:
+				bra		Plr1_KeyboardControl
 
 				move.w	#-20,d2
 
@@ -96,10 +88,11 @@ PLR1_mouse_control
 				bne.s	.halve
 				tst.b	Plr1_Ducked_b
 				beq.s	.nohalve
-.halve
-				asr.w	#1,d2
-.nohalve
 
+.halve:
+				asr.w	#1,d2
+
+.nohalve:
 				btst	#6,$bfe001
 				beq.s	.moving
 				moveq	#0,d2
@@ -132,19 +125,19 @@ PLR1_mouse_control
 				move.l	Plr1_SnapZSpdVal_l,d7
 				add.l	d6,Plr1_SnapXOff_l
 				add.l	d7,Plr1_SnapZOff_l
-
-				tst.b	PLR1_fire
+				tst.b	Plr1_Fire_b
 				beq.s	.firenotpressed
+
 ; fire was pressed last time.
 				btst	#7,$bfe001
 				bne.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR1_fire
+				st		Plr1_Fire_b
 				bra		.doneplr1
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR1_fire
+				clr.b	Plr1_Fire_b
 				bra		.doneplr1
 
 .firenotpressed
@@ -156,8 +149,8 @@ PLR1_mouse_control
 				bne.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR1_clicked
-				st		PLR1_fire
+				st		Plr1_Clicked_b
+				st		Plr1_Fire_b
 
 .doneplr1:
 
@@ -167,8 +160,7 @@ PLR1_mouse_control
 
 ADDTOBOBBLE:	dc.w	0
 
-PLR1_follow_path:
-
+Plr1_FollowPath:
 				move.l	pathpt,a0
 				move.w	(a0),d1
 				move.w	d1,Plr1_SnapXOff_l
@@ -194,9 +186,9 @@ notrestartpath:
 gunheldlast:
 				dc.w	0
 
-PLR1_alwayskeys
+Plr1_AlwaysKeys:
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 				move.b	showFPS_key,d7
@@ -207,14 +199,14 @@ PLR1_alwayskeys
 				jsr		SetupRenderbufferSize
 .noChange
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 				move.b	next_weapon_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nonextweappre
 
-; tst.w PLR1_TimeToShoot
+; tst.w Plr1_TimeToShoot_w
 ; bne.s .nonextweappre
 
 				tst.b	gunheldlast
@@ -223,7 +215,7 @@ PLR1_alwayskeys
 
 				moveq	#0,d0
 				move.b	Plr1_GunSelected_b,d0
-				move.l	#PLAYERONEGUNS,a0
+				move.l	#Plr1_Weapons_vb,a0
 
 .findnext
 				addq	#1,d0
@@ -257,28 +249,28 @@ nottapped:
 				tst.b	(a5,d7.w)
 				beq.s	notduck
 				clr.b	(a5,d7.w)
-				move.l	#playerheight,Plr1_SnapTargHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr1_SnapTargHeight_l
 				not.b	Plr1_Ducked_b
 				beq.s	notduck
-				move.l	#playercrouched,Plr1_SnapTargHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapTargHeight_l
 notduck:
 
 				move.l	Plr1_RoomPtr_l,a4
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr1_StoodInTop_b
-				beq.s	usebottom
+				beq.s	use_bottom
 				move.l	ZoneT_UpperFloor_l(a4),d0
 				sub.l	ZoneT_UpperRoof_l(a4),d0
-usebottom:
+use_bottom:
 
 				clr.b	Plr1_Squished_b
-				move.l	#playerheight,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_STAND_HEIGHT,plr1_SnapSquishedHeight_l
 
-				cmp.l	#playerheight+3*1024,d0
+				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	oktostand
 				st		Plr1_Squished_b
-				move.l	#playercrouched,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,plr1_SnapSquishedHeight_l
 oktostand:
 
 				move.l	Plr1_SnapTargHeight_l,d1
@@ -324,8 +316,8 @@ notseljoy:
 notselmouse:
 
 				lea		1(a5),a4
-				move.l	#PLAYERONEGUNS,a2
-				move.l	PLR1_Obj,a3
+				move.l	#Plr1_Weapons_vb,a2
+				move.l	Plr1_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2
 pickweap
@@ -334,12 +326,6 @@ pickweap
 				beq.s	notgotweap
 				move.b	d2,Plr1_GunSelected_b
 				move.w	#0,EntT_Timer1_w+128(a3)
-
-
-; SCROLLPOINTER
-; move.w #0,SCROLLXPOS
-; move.l #TEMPSCROLL+160,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 ; d2=number of gun.
 
@@ -358,7 +344,7 @@ gogog:
 				bne.s	.notswapscr2
 				st		lastscr
 
-				not.b	FULLSCRTEMP
+				not.b	Vid_FullScreenTemp_b
 
 				bra.s	.notswapscr2
 
@@ -383,43 +369,18 @@ gogog:
 .noframelimit:
 				rts
 
-FULLSCRTEMP:	dc.w	0
-
 				; Restores the complete original screen left/right borders,
 				; bottom panel.They are stored in a lha packed format
 
 				; a0 points to destination memory
-WIPEDISPLAY:
-				move.l	#borderpacked,d0
+Draw_ResetGameDisplay:
+				move.l	#draw_BorderPacked_vb,d0
 				moveq	#0,d1
-				lea		WorkSpace,a1
+				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
 				rts
-
-; The original WIPEDISPLAY seems to selectivel only clean the
-;				move.l	#231,d0
-;				moveq	#0,d1
-;				move.w	#7,d2
-;planel:
-;				move.l	#231,d0
-;wipe:
-;				move.l	d1,2(a0) ; skips left border
-;				move.l	d1,6(a0)
-;				move.l	d1,10(a0)
-;				move.l	d1,14(a0)
-;				move.l	d1,18(a0)
-;				move.l	d1,22(a0)
-;				move.l	d1,26(a0)
-;				move.l	d1,30(a0)
-;				move.l	d1,34(a0) ; skips right 16 border pixels
-;				add.w	#40,a0
-;				dbra	d0,wipe
-;				add.w	#40*24,a0
-;				dbra	d2,planel
-
-;				rts
 
 SHOWPLR1GUNNAME:
 				moveq	#0,d2
@@ -445,40 +406,38 @@ SHOWPLR1GUNNAME:
 				jsr		SENDMESSAGENORET
 				rts
 
-				align	4
+
 BIGsmall:		dc.b	0
 lastscr:		dc.b	0
 
-				cnop	0,4
-PLR1_keyboard_control:
-
-				move.l	#SineTable,a0
-
+				align	4
+Plr1_KeyboardControl:
+				move.l	#SinCosTable_vw,a0
 				jsr		PLR1_alwayskeys
-				move.l	#KeyMap,a5
 
+				move.l	#KeyMap_vb,a5
 				move.w	STOPOFFSET,d0
 				moveq	#0,d7
 				move.b	look_up_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nolookup
 
-				sub.w	#512,PLR1_AIMSPD
+				sub.w	#512,Plr1_AimSpeed_l
 				sub.w	#4,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR1_AIMSPD
+				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				moveq	#0,d7
 				move.b	look_down_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nolookdown
-				add.w	#512,PLR1_AIMSPD
+				add.w	#512,Plr1_AimSpeed_l
 				add.w	#4,d0
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR1_AIMSPD
+				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
 .nolookdown:
 
@@ -491,7 +450,7 @@ PLR1_keyboard_control:
 				st		OLDCENT
 
 				move.w	#0,d0
-				move.w	#0,PLR1_AIMSPD
+				move.w	#0,Plr1_AimSpeed_l
 
 				bra.s	.nocent2
 
@@ -550,7 +509,7 @@ PLR1_keyboard_control:
 
 				moveq	#0,d4
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				move.w	d3,d5
 				add.w	d5,d5
@@ -577,7 +536,7 @@ PLR1_keyboard_control:
 
 .noalwayssidestep:
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	noturnposs
 
 
@@ -586,7 +545,7 @@ PLR1_keyboard_control:
 				beq.s	noleftturn
 				sub.w	TURNSPD,d3
 noleftturn
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	norightturn
@@ -616,7 +575,7 @@ noturnposs:
 				add.w	d2,d4
 				asr.w	#1,d4
 noleftslide
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	norightslide
@@ -638,7 +597,7 @@ noslide:
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofriction
 
 				neg.l	d6
@@ -698,7 +657,7 @@ nobackward:
 				sub.l	d2,d6
 				add.l	d1,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nocontrolposs
 				add.l	d6,Plr1_SnapXSpdVal_l
 				add.l	d7,Plr1_SnapZSpdVal_l
@@ -709,18 +668,18 @@ nobackward:
 				add.l	d7,Plr1_SnapZOff_l
 
 				move.b	fire_key,d5
-				tst.b	PLR1_fire
+				tst.b	Plr1_Fire_b
 				beq.s	.firenotpressed
 ; fire was pressed last time.
 				tst.b	(a5,d5.w)
 				beq.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR1_fire
+				st		Plr1_Fire_b
 				bra		.doneplr1
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR1_fire
+				clr.b	Plr1_Fire_b
 				bra		.doneplr1
 
 .firenotpressed
@@ -732,8 +691,8 @@ nobackward:
 				beq.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR1_clicked
-				st		PLR1_fire
+				st		Plr1_Clicked_b
+				st		Plr1_Fire_b
 
 .doneplr1:
 
@@ -741,21 +700,14 @@ nobackward:
 
 				rts
 
-TEMPSCROLL
+TEMPSCROLL:
 				dcb.b	160,32
 
-passspace:
-				ds.l	400
-
-PLR1_JoyStick_control:
-
+Plr1_JoystickControl:
 				jsr		_ReadJoy1
-				bra		PLR1_keyboard_control
+				bra		Plr1_KeyboardControl
 
-PLR1_clumptime:	dc.w	0
-
-PLR1clump:
-
+Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	Plr1_RoomPtr_l,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0

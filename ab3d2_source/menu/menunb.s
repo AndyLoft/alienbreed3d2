@@ -355,10 +355,15 @@ mnu_setscreen:
 				bsr.w	mnu_fadein
 				rts
 
-mnu_vblint:		bsr.w	mnu_movescreen
+mnu_vblint:
+			IFNE	CLEAN_MENU_LOOK
+				bsr.w	mnu_animcursor
+			else
+				bsr.w	mnu_movescreen
 				bsr.w	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
+			ENDC
 				rts
 
 mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
@@ -1737,6 +1742,7 @@ mnu_MYLEVELMENUTEXT:
 ;					 12345678901234567890
 				dc.b	'                    ',1
 				dc.b	'                    ',1
+mnu_L1SLOTA:
 				dc.b	'      LEVEL  A      ',1
 				dc.b	'      LEVEL  B      ',1
 				dc.b	'      LEVEL  C      ',1
@@ -1768,6 +1774,7 @@ mnu_MYLEVELMENUTEXT2:
 ;					 12345678901234567890
 				dc.b	'                    ',1
 				dc.b	'                    ',1
+mnu_L2SLOTA:
 				dc.b	'      LEVEL  I      ',1
 				dc.b	'      LEVEL  J      ',1
 				dc.b	'      LEVEL  K      ',1
@@ -1955,7 +1962,7 @@ mnu_askfordisk:
 				dc.w	1
 				dc.l	2,0
 
-mnu_mainmenu:	dc.w	6,12					; X (bytes),Y (rows) of top left of scrn
+mnu_mainmenu:	dc.w	6,12					; X (bytes),Y (rows) of top left of Vid_Screen1Ptr_l
 				dc.l	mnu_maintext			; Text ptr
 				dc.w	4,70					; XCursor,YCursor
 				dc.w	20						; Spread
@@ -2305,8 +2312,11 @@ MenuWindow		dc.l	0
 
 				section	data,data
 
+	IFNE		CLEAN_MENU_LOOK
+mnu_background	ds.b	2*40*256			; 2x320x256 bitplanes
+	else
 mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
-
+	ENDC
 				section	bss_c,bss_c
 
 mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels

@@ -1,20 +1,19 @@
-extlen:			dc.w	0
-awayfromwall:	dc.w	0
-wallbounce:		dc.w	0
-wallxsize:		dc.w	0
-wallzsize:		dc.w	0
-walllength:		dc.w	0
-
-RoomPath:		ds.w	100
-RoomPathPtr:	dc.l	0
-QUITOUT:		dc.w	0
+			align 4
+obj_RoomPathPtr_l:	dc.l	0
+Obj_ExtLen_w:		dc.w	0
+WallXSize_w:		dc.w	0
+WallZSize_w:		dc.w	0
+WallLength_w:		dc.w	0
+obj_QuitLimit_w:	dc.w	0
+Obj_AwayFromWall_b:	dc.b	0 ; accessed as byte
+Obj_WallBounce_b:	dc.b	0 ; accessed as byte
 
 MoveObject:
 
 				move.l	objroom,objroomback
-				move.w	#50,QUITOUT
+				move.w	#50,obj_QuitLimit_w
 
-				move.l	#RoomPath,RoomPathPtr
+				move.l	#Obj_RoomPath_vw,obj_RoomPathPtr_l
 
 				clr.b	hitwall
 
@@ -25,13 +24,12 @@ MoveObject:
 				sub.w	oldz,d0
 				move.w	d0,zdiff
 				tst.w	xdiff
-				bne.s	.moveing
+				bne.s	.moving
 				tst.w	zdiff
-				bne.s	.moveing
+				bne.s	.moving
 				rts
 
-.moveing:
-
+.moving:
 				move.l	newy,wallhitheight
 				move.l	objroom,a0
 
@@ -40,7 +38,8 @@ gobackanddoitallagain:
 				move.l	a0,a5
 				adda.w	ZoneT_ExitList_w(a5),a0
 				move.l	a0,test
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
+
 checkwalls:
 				move.w	(a0)+,d0
 				blt		no_more_walls
@@ -65,9 +64,9 @@ checkwalls:
 				moveq	#0,d1
 				move.w	8(a2),d1
 				blt		thisisawall2
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d1.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 
 				move.l	ZoneT_Floor_l(a4),d1
 				move.l	d1,LowerFloorHeight
@@ -145,7 +144,7 @@ thisisawall2
 
 				move.l	#0,a4
 				move.l	#0,a6
-				move.b	awayfromwall,d3
+				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
 				move.b	12(a2),d2
@@ -187,7 +186,7 @@ thisisawall2
 				ble		chkhttt
 
 				move.w	10(a2),d3
-				add.w	extlen,d3
+				add.w	Obj_ExtLen_w,d3
 				divs	d3,d0
 				cmp.w	#32,d0
 				bge		oknothitwall
@@ -205,7 +204,7 @@ chkhttt:
 				move.l	d0,d7
 
 				move.w	10(a2),d3
-				add.w	extlen,d3
+				add.w	Obj_ExtLen_w,d3
 				divs	d3,d7					;  d
 
 				move.l	newy,d4
@@ -256,7 +255,7 @@ chkhttt:
 
 				move.l	d1,wallhitheight
 
-				tst.b	wallbounce
+				tst.b	Obj_WallBounce_b
 				bne.s	.calcbounce
 
 				tst.b	exitfirst(pc)
@@ -272,9 +271,9 @@ chkhttt:
 ; Supply wall data to reflect the
 ; movement direction of the object
 
-				move.w	d2,wallxsize
-				move.w	d5,wallzsize
-				move.w	d3,walllength
+				move.w	d2,WallXSize_w
+				move.w	d5,WallZSize_w
+				move.w	d3,WallLength_w
 
 .calcwherehit:
 
@@ -351,35 +350,6 @@ chkhttt:
 
 
 othercheck:
-
-; sub.w (a2),d6
-; sub.w 2(a2),d7
-; sub.w a4,d6
-; sub.w a6,d7
-;
-; muls d6,d6
-; muls d7,d7
-; add.w #5,d3
-; muls d3,d3
-;
-; add.l d6,d7
-; cmp.l d3,d7
-; bgt oknothitwall
-;
-; move.w d1,d7
-; move.w d0,d6
-; sub.w (a2),d6
-; sub.w 2(a2),d7
-; sub.w d2,d6
-; sub.w d5,d7
-; muls d6,d6
-; muls d7,d7
-; add.l d6,d7
-; cmp.l d3,d7
-; bgt oknothitwall
-;
-;************8
-
 				sub.w	(a2),d6
 				sub.w	2(a2),d7
 
@@ -458,7 +428,7 @@ oknothitwall:
 				bra		checkwalls
 no_more_walls:
 
-				tst.w	extlen
+				tst.w	Obj_ExtLen_w
 				beq		NOOTHERWALLSNEEDED
 
 				tst.w	xdiff
@@ -495,9 +465,9 @@ anotherwalls:
 				moveq	#0,d1
 				move.w	8(a2),d1
 				blt		.thisisawall2
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d1.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 
 				move.l	ZoneT_Floor_l(a4),d1
 				sub.l	ZoneT_Roof_l(a4),d1
@@ -567,7 +537,7 @@ anotherwalls:
 
 				move.l	#0,a4
 				move.l	#0,a6
-				move.b	awayfromwall,d3
+				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
 				move.b	12(a2),d2
@@ -646,7 +616,7 @@ anotherwalls:
 .mighthit:
 
 				move.w	10(a2),d0
-				add.w	extlen,d0
+				add.w	Obj_ExtLen_w,d0
 				divs	d0,d7					;  d
 				sub.w	#3,d7
 				move.w	d7,d6
@@ -745,51 +715,6 @@ nomoreotherwalls:
 NOOTHERWALLSNEEDED
 
 
-; move.w xdiff,d2
-; muls d2,d2
-; move.w zdiff,d3
-; muls d3,d3
-; move.w #0,movespd
-; move.l #0,largespd
-; add.l d3,d2
-;
-; move.w #31,d0
-;.findhigh
-; btst d0,d2
-; bne .foundhigh
-; dbra d0,.findhigh
-;.foundhigh
-; asr.w #1,d0
-; clr.l d3
-; bset d0,d3
-; move.l d3,d0
-;
-; move.w d0,d3
-; muls d3,d3	; x*x
-; sub.l d2,d3	; x*x-a
-; asr.l #1,d3	; (x*x-a)/2
-; divs d0,d3	; (x*x-a)/2x
-; sub.w d3,d0	; second approx
-; bgt .stillnot0
-; move.w #1,d0
-;.stillnot0
-;
-; move.w d0,d3
-; muls d3,d3
-; sub.l d2,d3
-; asr.l #1,d3
-; divs d0,d3
-; sub.w d3,d0	; second approx
-; bgt .stillnot02
-; move.w #1,d0
-;.stillnot02
-;
-; move.w d0,movespd
-;.moving
-; ext.l d0
-; asl.l #5,d0
-; move.l d0,largespd
-
 *****************************************************
 * FIND ROOM WE'RE STANDING IN ***********************
 *****************************************************
@@ -797,7 +722,7 @@ NOOTHERWALLSNEEDED
 				move.l	a5,a0
 				adda.w	ZoneT_ExitList_w(a5),a0
 
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 CheckMoreFloorLines
 				move.w	(a0)+,d0				; Either a floor line or -1
 				blt		NoMoreFloorLines
@@ -811,52 +736,12 @@ CheckMoreFloorLines
 
 				moveq	#0,d1
 				move.w	8(a2),d1
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d1.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 
 				move.l	ZoneT_Roof_l(a4),LowerRoofHeight
 
-; move.l newy,d0
-; move.l d0,d1
-; add.l thingheight,d1
-;
-; sub.l ZoneT_Roof_l(a4),d0
-; blt.s NOTINLOWER
-;
-; sub.l ZoneT_Floor_l(a4),d1
-; blt.s okthebottom
-;
-; cmp.l StepUpVal,d1
-; bgt.s NOTINLOWER
-;
-; move.l ZoneT_Floor_l(a4),d1
-; sub.l thingheight,d1
-; move.l d1,newy
-; bra okthebottom
-;
-;NOTINLOWER:
-;
-; move.l ZoneT_Roof_l(a4),billy
-; move.l ZoneT_Roof_l(a4),billy+4
-; add.l d0,billy+4
-;
-; st CrossIntoTop
-; move.l newy,d0
-; move.l d0,d1
-; add.l thingheight,d1
-; sub.l ZoneT_UpperRoof_l(a4),d0
-; blt CheckMoreFloorLines
-;
-; sub.l ZoneT_UpperFloor_l(a4),d1
-; blt.s okthebottom
-;
-; cmp.l StepUpVal,d1
-; bgt CheckMoreFloorLines
-
-; move.l ZoneT_UpperFloor_l(a4),d1
-; sub.l thingheight,d1
-; move.l d1,newy
 
 okthebottom
 
@@ -868,45 +753,18 @@ okthebottom
 				muls	6(a2),d0
 				moveq	#0,d3
 				move.w	8(a2),d3
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d3.w*4),a3
-				add.l	LEVELDATA,a3
+				add.l	Lvl_DataPtr_l,a3
 				sub.l	d1,d0
 				bge		StillSameSide
 
 * Player is now on the left side of this line.
 * Where was he before?
 
-; cmp.l a4,a5
-; bne StillSameSide
-
-; move.w oldx,d0
-; move.w oldz,d1
-; sub.w (a2),d0	;a
-; sub.w 2(a2),d1	;b
-; muls 4(a2),d1
-; muls 6(a2),d0
-; sub.l d1,d0
-; blt StillSameSide
-; bra checkifcrossed
-
 OnRightsideofline:
 * Player is now on the right side of the line.
 * Where was he last time?
-
-; exg a3,a4
-
-; cmp.l a3,a5
-; bne StillSameSide
-
-; move.w oldx,d0
-; move.w oldz,d1
-; sub.w (a2),d0	;a
-; sub.w 2(a2),d1	;b
-; muls 4(a2),d1
-; muls 6(a2),d0
-; sub.l d1,d0
-; bgt StillSameSide
 
 checkifcrossed:
 
@@ -977,16 +835,16 @@ checkifcrossed:
 				slt		StoodInTop
 
 				move.l	a3,a5
-				move.l	RoomPathPtr,a0
+				move.l	obj_RoomPathPtr_l,a0
 				move.w	(a3),(a0)+
-				move.l	a0,RoomPathPtr
+				move.l	a0,obj_RoomPathPtr_l
 				move.l	a3,a0
 				move.l	a5,objroom
 
-				move.w	QUITOUT,d0
+				move.w	obj_QuitLimit_w,d0
 				sub.w	#1,d0
 				beq.s	ERRORINMOVEMENT
-				move.w	d0,QUITOUT
+				move.w	d0,obj_QuitLimit_w
 				bra		gobackanddoitallagain
 ; bra.s donefloorline
 
@@ -1003,7 +861,7 @@ mustbeinsameroom:
 
 stopandleave:
 
-				move.l	RoomPathPtr,a0
+				move.l	obj_RoomPathPtr_l,a0
 				move.w	#-1,(a0)+
 
 				rts
@@ -1349,7 +1207,7 @@ HeadTowardsAng:
 
 				move.w	SinRet,d0
 				move.w	#0,d2
-				move.l	#SineTable,a2
+				move.l	#SinCosTable_vw,a2
 				lea		2048(a2),a3
 				move.w	#3,d5
 				move.w	#2048,d6
@@ -1414,10 +1272,10 @@ GetNextCPt:
 				add.l	d1,d0
 				move.l	a0,-(a7)
 
-				move.l	LINKS,a0
+				move.l	Lvl_WalkLinksPtr_l,a0
 				tst.b	AI_FlyABit_w
 				beq.s	.walklink
-				move.l	FLYLINKS,a0
+				move.l	Lvl_FlyLinksPtr_l,a0
 .walklink:
 				move.b	(a0,d0.w),d0
 				move.b	d0,d1
@@ -1440,7 +1298,7 @@ CanItBeSeenAng:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.w	Facedir,d0
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				add.w	d0,a0
 				move.w	(a0),d0
 				move.w	2048(a0),d1
@@ -1499,9 +1357,9 @@ InList:
 				move.w	(a0),d1
 				tst.w	d1
 				blt		outlist
-				move.l	ZoneGraphAdds,a1
+				move.l	Lvl_ZoneGraphAddsPtr_l,a1
 				move.l	(a1,d1.w*8),a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 
 				adda.w	#8,a0
 				cmp.w	(a1),d0
@@ -1518,7 +1376,7 @@ isinlist:
 
 				st		CanSee
 
-				move.l	Points,a2
+				move.l	Lvl_PointsPtr_l,a2
 				move.w	Targetx,d1
 				move.w	Targetz,d2
 				sub.w	Viewerx,d1
@@ -1527,7 +1385,7 @@ isinlist:
 				moveq	#0,d3
 				move.w	-6(a0),d3
 				blt		nomorerclips
-				move.l	LEVELCLIPS,a1
+				move.l	Lvl_ClipsPtr_l,a1
 				lea		(a1,d3.l*2),a1
 				move.l	a1,clipstocheck
 checklcliploop:
@@ -1588,7 +1446,7 @@ nomorerclips:
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
 				move.l	FromRoom,a5
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
 				sub.w	Viewery,d7
@@ -1676,9 +1534,9 @@ madeit:
 
 				moveq	#0,d3
 				move.w	8(a2),d3
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d3.w*4),a5
-				add.l	LEVELDATA,a5
+				add.l	Lvl_DataPtr_l,a5
 
 				clr.b	d2
 				cmp.l	ZoneT_Floor_l(a5),d5
@@ -1721,7 +1579,7 @@ FindCollisionPt:
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
 				move.l	FromRoom,a5
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
 				sub.w	Viewery,d7
@@ -1792,9 +1650,9 @@ FindCollisionPt:
 				moveq	#0,d3
 				move.w	8(a2),d3
 				blt		foundpt
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d3.w*4),a5
-				add.l	LEVELDATA,a5
+				add.l	Lvl_DataPtr_l,a5
 
 				clr.b	d2
 				cmp.l	ZoneT_Floor_l(a5),d5
@@ -1838,7 +1696,7 @@ GetRand:
 Rand1:			dc.w	234
 
 GoInDirection:
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),d1
 				move.w	2048(a0),d2
@@ -1860,7 +1718,7 @@ MYROOM:			dc.w	0
 
 Collision:
 
-				move.l	ObjectDataPtr_l,a0
+				move.l	Lvl_ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
 				move.w	12(a0,d0.w),MYROOM
@@ -1868,7 +1726,7 @@ Collision:
 				ext.w	d0
 
 				sub.w	#64,a0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	#ColBoxTable,a2
 				lea		(a2,d0.w*8),a3
 
@@ -2034,9 +1892,9 @@ floortemp:		dc.l	0
 CheckTeleport:
 				clr.b	OKTEL
 				move.w	FromZone,d0
-				move.l	ZoneAdds,a2
+				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
-				add.l	LEVELDATA,a2
+				add.l	Lvl_DataPtr_l,a2
 				tst.w	ZoneT_TelZone_w(a2)
 				bge.s	ITSATEL
 				rts
@@ -2044,9 +1902,9 @@ CheckTeleport:
 ITSATEL:
 				move.l	ZoneT_Floor_l(a2),floortemp
 				move.w	ZoneT_TelZone_w(a2),d0
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d0.w*4),a3
-				add.l	LEVELDATA,a3
+				add.l	Lvl_DataPtr_l,a3
 				move.l	ZoneT_Floor_l(a3),d0
 				sub.l	floortemp,d0
 				move.l	d0,floortemp
@@ -2067,20 +1925,10 @@ ITSATEL:
 				rts
 .teleport:
 				move.w	ZoneT_TelZone_w(a2),d0
-				move.l	ZoneAdds,a2
+				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
-				add.l	LEVELDATA,a2
+				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,objroom
-;adds sound for aliens that use teleports - taken from the player teleport in hires.s
-;only plays at a consant volume, not sure how volume over disance should be calculated.
-				SAVEREGS
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#26,Samplenum
-				move.w	#10,Noisevol;#100,Noisevol
-				move.w	#$fff9,IDNUM
-				jsr		MakeSomeNoise
-				GETREGS
 
 				rts
 
@@ -2094,15 +1942,15 @@ FindCloseRoom:
 				move.l	d1,newy
 
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 
 				move.w	12(a0),d2
-				move.l	ZoneAdds,a5
+				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d2
-				add.l	LEVELDATA,d2
+				add.l	Lvl_DataPtr_l,d2
 				move.l	d2,objroom
 
 				move.w	THISPLRxoff,newx
@@ -2131,11 +1979,11 @@ FindCloseRoom:
 				move.w	d1,newx
 				move.w	d0,newz
 				movem.l	d0-d7/a0-a6,-(a7)
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	#RoomPath,a2
+				move.l	#Obj_RoomPath_vw,a2
 				move.l	#possclose,a3
 				move.w	12(a0),(a3)+
 
@@ -2152,11 +2000,11 @@ putinmore:
 				move.w	d1,newz
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	#RoomPath,a2
+				move.l	#Obj_RoomPath_vw,a2
 
 putinmore2:
 				move.w	(a2)+,d0
@@ -2170,7 +2018,7 @@ putinmore2:
 
 				move.w	12(a0),d7
 
-				move.l	endoflist,a3
+				move.l	Zone_EndOfListPtr_l,a3
 FINDCLOSELOOP:
 				move.l	#possclose,a2
 				move.w	-(a3),d0

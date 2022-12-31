@@ -1,21 +1,16 @@
 
-gotgun:			dc.w	0
-
-ANIMPOINTER:	dc.l	0
+				align 4
+AlienAnimPtr_l:	dc.l	0
 
 ALIENBRIGHT:	dc.w	0
 
 ItsAnAlien:
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.NONASIES
 
 				move.l	#32*256,StepUpVal
 				move.l	#32*256,StepDownVal
-
-; move.l #4,deadframe
-; move.w #0,screamsound
-; move.w #160,nasheight
 
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				move.w	12(a0),d2
@@ -31,9 +26,9 @@ ItsAnAlien:
 
 .okalive:
 
-				move.l	ZoneAdds,a5
+				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
 
 				move.l	d0,a6
@@ -51,7 +46,7 @@ ItsAnAlien:
 				add.l	#GLFT_AlienAnims_l,a6
 				add.l	d0,a6
 
-				move.l	a6,ANIMPOINTER
+				move.l	a6,AlienAnimPtr_l
 
 				move.l	GLF_DatabasePtr_l,a1
 				move.l	a1,a2
@@ -93,8 +88,8 @@ ItsAnAlien:
 				move.w	AlienT_FollowupSpeed_w(a1),AI_FollowupSpeed_w
 				move.w	AlienT_FollowupTimeout_w(a1),AI_FollowupTimer_w
 				move.w	AlienT_Girth_w(a1),d0
-				move.b	diststowall+1(pc,d0.w*4),awayfromwall
-				move.w	diststowall+2(pc,d0.w*4),extlen
+				move.b	diststowall+1(pc,d0.w*4),Obj_AwayFromWall_b
+				move.w	diststowall+2(pc,d0.w*4),Obj_ExtLen_w
 				jsr		AI_MainRoutine
 
 				rts
@@ -148,7 +143,7 @@ Collectable:
 
 				move.w	d0,EntT_GraphicRoom_w(a0)
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
@@ -161,9 +156,9 @@ Collectable:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -188,23 +183,23 @@ Collectable:
 
 				bsr		DEFANIMOBJ
 
-				bsr		CHECKNEARBYONE
+				bsr		Plr1_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotCollected1
 
-				bsr		PLR1CollectObject
+				bsr		Plr1_CollectItem
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
 .NotCollected1
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
-				bsr		CHECKNEARBYTWO
+				bsr		Plr2_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotCollected2
 
-				bsr		PLR2CollectObject
+				bsr		Plr2_CollectItem
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
@@ -224,7 +219,7 @@ Activatable:
 				bne		ACTIVATED
 
 				move.w	d0,EntT_GraphicRoom_w(a0)
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
@@ -237,9 +232,9 @@ Activatable:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -264,7 +259,7 @@ Activatable:
 
 				bsr		DEFANIMOBJ
 
-				bsr		CHECKNEARBYONE
+				bsr		Plr1_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotActivated1
 
@@ -274,7 +269,7 @@ Activatable:
 ; The player has pressed the spacebar
 ; within range of the object.
 
-				bsr		PLR1CollectObject
+				bsr		Plr1_CollectItem
 
 
 				move.w	#0,EntT_Timer1_w(a0)
@@ -285,9 +280,9 @@ Activatable:
 .NotActivated1:
 
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		.NotActivated2
-				bsr		CHECKNEARBYTWO
+				bsr		Plr2_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotActivated2
 
@@ -296,7 +291,7 @@ Activatable:
 
 ; The player has pressed the spacebar
 ; within range of the object.
-				bsr		PLR2CollectObject
+				bsr		Plr2_CollectItem
 
 
 				move.w	#0,EntT_Timer1_w(a0)
@@ -321,9 +316,9 @@ ACTIVATED:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -358,7 +353,7 @@ ACTIVATED:
 
 .nottimeout:
 
-				bsr		CHECKNEARBYONE
+				bsr		Plr1_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotDeactivated1
 
@@ -376,10 +371,10 @@ ACTIVATED:
 
 .NotDeactivated1:
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotDeactivated2
 
-				bsr		CHECKNEARBYTWO
+				bsr		Plr2_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotDeactivated2
 
@@ -414,20 +409,15 @@ Destructable:
 				tst.b	EntT_NumLives_b(a0)
 				beq.s	.alreadydead
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.notext
 
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
 				muls	#160,d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
-; move.w #0,SCROLLXPOS
-; move.l d0,SCROLLPOINTER
-; add.l #160,d0
-; move.l d0,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 .notext:
 
@@ -449,9 +439,9 @@ Destructable:
 
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -485,7 +475,7 @@ StillHere:
 .okinroom
 				move.b	#1,EntT_NumLives_b(a0)
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
@@ -499,13 +489,13 @@ StillHere:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.w	12(a0),d2
-				move.l	ZoneAdds,a5
+				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 
@@ -528,9 +518,9 @@ Decoration
 intodeco:
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -557,28 +547,22 @@ intodeco:
 
 				rts
 
-PLR1CollectObject:
-
-				cmp.b	#'n',mors
+Plr1_CollectItem:
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nodeftext
 
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
 				muls	#160,d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
-; move.w #0,SCROLLXPOS
-; move.l d0,SCROLLPOINTER
-; add.l #160,d0
-; move.l d0,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 				bra		.nodeftext
 
 .notext:
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.nodeftext
 
 				moveq	#0,d2
@@ -617,23 +601,23 @@ PLR1CollectObject:
 
 ; Check if player has max of all ammo types:
 
-				bsr		CHECKPLAYERGOT
-				tst.b	d0
-				beq		dontcollect
+;				bsr		CHECKPLAYERGOT
+;				tst.b	d0
+;				beq		.no_collect
 
 				move.w	#21,d0
-				move.l	#PLAYERONEHEALTH,a1
-GiveAmmo:
+				move.l	#Plr1_Health_w,a1
+.add_ammo:
 				move.w	(a3)+,d1
 				add.w	d1,(a1)+
-				dbra	d0,GiveAmmo
+				dbra	d0,.add_ammo
 
 				move.w	#11,d0
-				move.l	#PLAYERONESHIELD,a1
-GiveGuns:
+				move.l	#Plr1_Shield_w,a1
+.add_weapons:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
-				dbra	d0,GiveGuns
+				dbra	d0,.add_weapons
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
@@ -656,14 +640,12 @@ GiveGuns:
 				move.l	(a1),Noisex
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
-
-dontcollect:
+.nosoundmake:
+.no_collect:
 				rts
 
-PLR2CollectObject:
-
+Plr2_CollectItem:
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AmmoGive_l(a2),a3
 				add.l	#GLFT_GunGive_l,a2
@@ -676,24 +658,23 @@ PLR2CollectObject:
 				add.w	d0,a3
 
 ; Check if player has max of all ammo types:
-
-				bsr		CHECKPLAYERGOT
-				tst.b	d0
-				beq		dontcollect2
+;				bsr		CHECKPLAYERGOT
+;				tst.b	d0
+;				beq		.no_collect
 
 				move.w	#21,d0
-				move.l	#PLAYERTWOHEALTH,a1
-GiveAmmo2:
+				move.l	#Plr2_Health_w,a1
+.add_ammo:
 				move.w	(a3)+,d1
 				add.w	d1,(a1)+
-				dbra	d0,GiveAmmo2
+				dbra	d0,.add_ammo
 
 				move.w	#11,d0
-				move.l	#PLAYERTWOSHIELD,a1
-GiveGuns2:
+				move.l	#Plr2_Shield_w,a1 ; Armour!
+.add_weapons:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
-				dbra	d0,GiveGuns2
+				dbra	d0,.add_weapons
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
@@ -717,49 +698,19 @@ GiveGuns2:
 				move.b	#0,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
+.nosoundmake:
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
-dontcollect2:
+.no_collect:
 				rts
-
-PLAYERONEHEALTH:
-				dc.w	0
-PLAYERONEFUEL:
-				dc.w	0
-PLAYERONEAMMO:
-				ds.w	20
-
-PLAYERONESHIELD:
-				dc.w	0
-PLAYERONEJETPACK:
-				dc.w	0
-PLAYERONEGUNS:
-				dcb.w	10,0
-
-PLAYERTWOHEALTH:
-				dc.w	0
-PLAYERTWOFUEL:
-				dc.w	0
-PLAYERTWOAMMO:
-				ds.w	20
-
-PLAYERTWOSHIELD:
-				dc.w	0
-PLAYERTWOJETPACK:
-				dc.w	0
-PLAYERTWOGUNS:
-				dcb.w	10,0
-
 
 CHECKPLAYERGOT:
 				move.b	#1,d0
 				rts
 
-CHECKNEARBYONE:
-
+Plr1_CheckObjectCollide:
 				move.l	StatPointer,a2
 				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -787,7 +738,7 @@ CHECKNEARBYONE:
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.w	ObjT_CollideRadius_w(a2),d2
@@ -799,8 +750,7 @@ CHECKNEARBYONE:
 				moveq	#0,d0
 				rts
 
-CHECKNEARBYTWO:
-
+Plr2_CheckObjectCollide:
 				move.l	StatPointer,a2
 				move.b	Plr2_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -828,7 +778,7 @@ CHECKNEARBYTWO:
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.w	ObjT_CollideRadius_w(a2),d2
@@ -997,45 +947,14 @@ THISPLRxoff:	dc.w	0
 THISPLRzoff:	dc.w	0
 
 ViewpointToDraw:
-; Calculate which side to display:
-
-; move.l ObjectPoints,a1
-; move.w (a0),d1
-; lea (a1,d1.w*8),a1	; ptr to points
-
-; move.w (a1),oldx
-; move.w 4(a1),oldz
-; move.w THISPLRxoff,newx
-; move.w THISPLRzoff,newz
-; move.w #64,speed
-; move.w #-60,Range
-; movem.l a0/a1,-(a7)
-; jsr HeadTowards
-; movem.l (a7)+,a0/a1
-;
-; move.w newx,d0
-; sub.w oldx,d0
-; move.w newz,d1
-; sub.w oldz,d1
-
 				move.w	EntT_CurrentAngle_w(a0),d3
 				sub.w	angpos,d3
 
-; add.w #2048,d3
 				and.w	#8190,d3
-				move.l	#SineTable,a2
+				move.l	#SinCosTable_vw,a2
 				move.w	(a2,d3.w),d2
 				adda.w	#2048,a2
 				move.w	(a2,d3.w),d3
-
-; move.w d0,d4
-; move.w d1,d5
-; muls d3,d4
-; muls d2,d5
-; sub.l d5,d4
-; muls d3,d1
-; muls d2,d0
-; add.l d1,d0
 
 				ext.l	d2
 				ext.l	d3
@@ -1102,7 +1021,7 @@ RunAround:
 				sub.w	newz,d1					; dz
 				asr.w	#1,d1
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				lea		(a1,d2.w*8),a1
 				move.w	(a1),d2
@@ -1130,9 +1049,7 @@ tsz:			dc.w	0
 fsx:			dc.w	0
 fsz:			dc.w	0
 
-SHOOTPLAYER1
-
-
+SHOOTPLAYER1:
 				move.w	oldx,tsx
 				move.w	oldz,tsz
 				move.w	newx,fsx
@@ -1174,8 +1091,8 @@ SHOOTPLAYER1
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 
 				st		exitfirst
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
@@ -1208,9 +1125,10 @@ SHOOTPLAYER1
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
-.findonefree2
+
+.findonefree2:
 				move.w	12(a0),d2
 				blt.s	.foundonefree2
 				adda.w	#64,a0
@@ -1224,8 +1142,7 @@ SHOOTPLAYER1
 				rts
 
 .foundonefree2:
-
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -1255,11 +1172,11 @@ futurez:		dc.w	0
 
 FireAtPlayer1:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 
-				move.l	NastyShotData,a5
+				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0
@@ -1291,7 +1208,7 @@ FireAtPlayer1:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a5/a1/a0
 
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d1
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
@@ -1354,7 +1271,7 @@ FireAtPlayer1:
 				add.l	SHOTYOFF,d0
 				move.l	d0,ShotT_AccYPos_w(a5)
 				move.b	SHOTINTOP,ShotT_InUpperZone_b(a5)
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	4(a2),d1
 				sub.w	#20,d1
 				ext.l	d1
@@ -1375,10 +1292,10 @@ FireAtPlayer1:
 				st		ShotT_Worry_b(a5)
 
 ; FIXME: this is causing Enforcer hits. It looks like the places that put a
-; value into GunData are all commented out. On the other hand, most other places
+; value into Plr_GunDataPtr_l are all commented out. On the other hand, most other places
 ; writing to ShotT_Gravity_w just write a 0. Maybe no alien weapon has gravity applied?
 ; similar with ShotT_Flags_w
-;				move.l	GunData,a6
+;				move.l	Plr_GunDataPtr_l,a6
 ;				moveq	#0,d0
 ;				move.b	SHOTTYPE,d0
 ;				asl.w	#5,d0
@@ -1436,8 +1353,8 @@ SHOOTPLAYER2
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 
 				st		exitfirst
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
@@ -1470,7 +1387,7 @@ SHOOTPLAYER2
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 
-				move.l	NastyShotData,a0
+				move.l	NastyShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -1487,7 +1404,7 @@ SHOOTPLAYER2
 
 .foundonefree2:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -1512,7 +1429,7 @@ SHOOTPLAYER2
 				rts
 
 FireAtPlayer2:
-				move.l	NastyShotData,a5
+				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0
@@ -1544,7 +1461,7 @@ FireAtPlayer2:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a5/a1/a0
 
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d1
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
@@ -1593,7 +1510,7 @@ FireAtPlayer2:
 				add.l	SHOTYOFF,d0
 				move.l	d0,ShotT_AccYPos_w(a5)
 				move.b	SHOTINTOP,ShotT_InUpperZone_b(a5)
-				move.l	PLR2_Obj,a2
+				move.l	Plr2_ObjectPtr_l,a2
 				move.w	4(a2),d1
 				sub.w	#20,d1
 				ext.l	d1
@@ -1614,6 +1531,8 @@ FireAtPlayer2:
 .cantshoot
 				rts
 
+				align 4
+backroom:		dc.l	0
 SHOTYOFF:		dc.l	0
 SHOTTYPE:		dc.w	0
 SHOTPOWER:		dc.w	0
@@ -1622,4 +1541,3 @@ SHOTOFFMULT:	dc.w	0
 SHOTSHIFT:		dc.w	0
 SHOTINTOP:		dc.w	0
 
-backroom:		dc.l	0
