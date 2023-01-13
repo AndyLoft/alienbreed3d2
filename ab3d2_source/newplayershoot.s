@@ -16,7 +16,8 @@ Plr1_Shot:
 				bge		.no_fire
 
 				move.w	#0,Plr1_TimeToShoot_w
-
+				move.w	#4,Anim_Timer_w;		may not be a great idea to shove this in here as lightng also uses this.
+				st	Anim_Delay_w
 .no_fire:		; early out
 				rts
 

@@ -1042,7 +1042,7 @@ nofadedownhc:
 
 				cmp	#0,Anim_Timer_w
 				bgt.s	.not_zero
-				move.w	#3,Anim_Timer_w
+				move.w	#4,Anim_Timer_w
 				st	Anim_Delay_w
 				bra	.is_zero
 .not_zero
