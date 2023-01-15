@@ -318,13 +318,46 @@ GETSTATS:
 
 
 SETPLAYERS:
-				move.w	PLOPT,d0
-				add.b	#'a',d0
+				cmp.b	#'h',Prefsfile+2
+				bne	.easy
+				moveq	#0,d0
+				;add.b	#'h',d0
+				move.b	Prefsfile+2,d0
 				move.b	d0,Lvl_BinFilenameX_vb
 				move.b	d0,Lvl_GfxFilenameX_vb
 				move.b	d0,Lvl_ClipsFilenameX_vb
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
+				bra	.done
+.easy
+				cmp.b	#'e',Prefsfile+2
+				bne	.standard
+				moveq	#0,d0
+				;add.b	#'e',d0
+				move.b	Prefsfile+2,d0
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
+				bra	.done
+
+.standard
+				moveq	#0,d0
+				add.b	#'s',d0
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
+.done
+				move.w	PLOPT,d0
+				add.b	#'a',d0
+				move.b	d0,Lvl_BinFilenameXX_vb
+				move.b	d0,Lvl_GfxFilenameXX_vb
+				move.b	d0,Lvl_ClipsFilenameXX_vb
+				move.b	d0,Lvl_MapFilenameXX_vb
+				move.b	d0,Lvl_FlyMapFilenameXX_vb
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -350,11 +383,11 @@ Plr_InitSlave:
 				jsr		RECFIRST
 				move.w	d0,PLOPT
 				add.b	#'a',d0
-				move.b	d0,Lvl_BinFilenameX_vb
-				move.b	d0,Lvl_GfxFilenameX_vb
-				move.b	d0,Lvl_ClipsFilenameX_vb
-				move.b	d0,Lvl_MapFilenameX_vb
-				move.b	d0,Lvl_FlyMapFilenameX_vb
+				move.b	d0,Lvl_BinFilenameXX_vb
+				move.b	d0,Lvl_GfxFilenameXX_vb
+				move.b	d0,Lvl_ClipsFilenameXX_vb
+				move.b	d0,Lvl_MapFilenameXX_vb
+				move.b	d0,Lvl_FlyMapFilenameXX_vb
 
 				jsr		RECFIRST
 				move.w	d0,Rand1

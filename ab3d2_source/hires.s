@@ -396,7 +396,7 @@ Game_Begin:
 				move.l	d0,Lvl_FlyLinksPtr_l
 
 				moveq	#0,d1
-				move.b	Lvl_BinFilenameX_vb,d1
+				move.b	Lvl_BinFilenameXX_vb,d1
 				sub.b	#'a',d1
 				lsl.w	#6,d1
 				move.l	GLF_DatabasePtr_l,a0
@@ -8886,7 +8886,7 @@ pastster:
 				bra		notogglesound2
 
 Prefsfile:
-				dc.b	'k8nx'
+				dc.b	'k8sx'
 
 notogglesound:
 				clr.b	lasttogsound
