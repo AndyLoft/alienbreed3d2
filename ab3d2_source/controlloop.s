@@ -526,6 +526,15 @@ READMAINMENU:
 ;				lea		mnu_MYMAINMENU,a0
 ;				bsr		MYOPENMENU
 
+				cmp.w	#7,d0
+				bne		.rdlop
+				bsr		WAITREL
+
+				bsr		difficultyOptions
+
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
+
 				bsr		WAITREL
 				bra		.rdlop
 ***************************************************************
@@ -613,6 +622,29 @@ DEFGAME:
 
 .defloaded;								 can use this now
 				not.b	LOADEXT;			 reset for next load
+				rts
+***************************************************************
+difficultyOptions:
+				lea		mnu_MYDIFFICULTY,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYDIFFICULTY,a0
+				bsr		CHECKMENU
+.rdlop
+				cmp.w	#0,d0
+				bne.s	.easy
+				move.b	#'s',Prefsfile+2
+				bra.s	.done
+.easy
+				cmp.w	#1,d0
+				bne.s	.hard
+				move.b	#'e',Prefsfile+2
+				bra.s	.done
+.hard
+				cmp.w	#2,d0
+				bne.s	.rdlop
+				move.b	#'h',Prefsfile+2
+.done
 				rts
 ***************************************************************
 playgame:

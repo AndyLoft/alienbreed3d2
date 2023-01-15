@@ -1692,7 +1692,7 @@ mnu_MYMAINMENU:
 				dc.l	mnu_MYMAINMENUTEXT
 				dc.w	0,40
 				dc.w	20
-				dc.w	7
+				dc.w	8
 				dc.l	0,0
 				dc.l	0,0
 				dc.l	0,0
@@ -1713,7 +1713,7 @@ mnu_CURRENTLEVELLINE:
 				dc.b	'    GAME CREDITS    ',1
 				dc.b	'   LOAD  POSITION   ',1
 				dc.b	'   SAVE  POSITION   ',1
-;				dc.b	'                    ',1
+				dc.b	'     DIFFICULTY     ',1
 				dc.b	'                    ',1
 				dc.b	'                    ',0
 
@@ -1782,6 +1782,27 @@ mnu_MYLEVELMENUTEXT2:
 				EVEN
 
 ***************************************************************
+
+mnu_MYDIFFICULTY:
+				dc.w	0,80
+				dc.l	mnu_MYDIFFICULTYTEXT
+				dc.w	0,80
+				dc.w	20
+				dc.w	3
+				ds.l	6
+
+				EVEN
+
+mnu_MYDIFFICULTYTEXT:
+;                        12345678901234567890
+				dc.b	'      STANDARD      ',1
+				dc.b	'        EASY        ',1
+				dc.b	'        HARD        ',0
+
+				EVEN
+
+***************************************************************
+
 mnu_MYCONTROLSONE:
 				dc.w	0,0
 				dc.l	mnu_MYCONTROLTEXTONE
