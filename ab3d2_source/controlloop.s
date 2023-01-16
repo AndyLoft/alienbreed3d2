@@ -318,31 +318,7 @@ GETSTATS:
 
 
 SETPLAYERS:
-				; cmp.b	#'h',Prefsfile+2
-				; bne	.easy
-				; moveq	#0,d0
-				; ;add.b	#'h',d0
-				; move.b	Prefsfile+2,d0
-				; move.b	d0,Lvl_BinFilenameX_vb
-				; move.b	d0,Lvl_GfxFilenameX_vb
-				; move.b	d0,Lvl_ClipsFilenameX_vb
-				; move.b	d0,Lvl_MapFilenameX_vb
-				; move.b	d0,Lvl_FlyMapFilenameX_vb
-				; bra	.done
-; .easy
-				; cmp.b	#'e',Prefsfile+2
-				; bne	.standard
-				; moveq	#0,d0
-				; ;add.b	#'e',d0
-				; move.b	Prefsfile+2,d0
-				; move.b	d0,Lvl_BinFilenameX_vb
-				; move.b	d0,Lvl_GfxFilenameX_vb
-				; move.b	d0,Lvl_ClipsFilenameX_vb
-				; move.b	d0,Lvl_MapFilenameX_vb
-				; move.b	d0,Lvl_FlyMapFilenameX_vb
-				; bra	.done
 
-; .standard
 				moveq	#0,d0
 				;add.b	#'s',d0
 				move.b	Prefsfile+2,d0
@@ -351,7 +327,7 @@ SETPLAYERS:
 				move.b	d0,Lvl_ClipsFilenameX_vb
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
-.done
+
 				move.w	PLOPT,d0
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameXX_vb
@@ -633,19 +609,19 @@ difficultyOptions:
 				lea		mnu_MYDIFFICULTY,a0
 				bsr		CHECKMENU
 .rdlop
-				cmp.w	#0,d0
+				cmp.w	#2,d0
 				bne.s	.easy
-				move.b	#'s',Prefsfile+2
+				move.b	#'h',Prefsfile+2
 				bra.s	.done
 .easy
 				cmp.w	#1,d0
-				bne.s	.hard
+				bne.s	.std
 				move.b	#'e',Prefsfile+2
 				bra.s	.done
-.hard
-				cmp.w	#2,d0
+.std;O_o
+				cmp.w	#0,d0
 				bne.s	.rdlop
-				move.b	#'h',Prefsfile+2
+				move.b	#'s',Prefsfile+2
 .done
 				rts
 ***************************************************************
