@@ -318,33 +318,34 @@ GETSTATS:
 
 
 SETPLAYERS:
-				cmp.b	#'h',Prefsfile+2
-				bne	.easy
-				moveq	#0,d0
-				;add.b	#'h',d0
-				move.b	Prefsfile+2,d0
-				move.b	d0,Lvl_BinFilenameX_vb
-				move.b	d0,Lvl_GfxFilenameX_vb
-				move.b	d0,Lvl_ClipsFilenameX_vb
-				move.b	d0,Lvl_MapFilenameX_vb
-				move.b	d0,Lvl_FlyMapFilenameX_vb
-				bra	.done
-.easy
-				cmp.b	#'e',Prefsfile+2
-				bne	.standard
-				moveq	#0,d0
-				;add.b	#'e',d0
-				move.b	Prefsfile+2,d0
-				move.b	d0,Lvl_BinFilenameX_vb
-				move.b	d0,Lvl_GfxFilenameX_vb
-				move.b	d0,Lvl_ClipsFilenameX_vb
-				move.b	d0,Lvl_MapFilenameX_vb
-				move.b	d0,Lvl_FlyMapFilenameX_vb
-				bra	.done
+				; cmp.b	#'h',Prefsfile+2
+				; bne	.easy
+				; moveq	#0,d0
+				; ;add.b	#'h',d0
+				; move.b	Prefsfile+2,d0
+				; move.b	d0,Lvl_BinFilenameX_vb
+				; move.b	d0,Lvl_GfxFilenameX_vb
+				; move.b	d0,Lvl_ClipsFilenameX_vb
+				; move.b	d0,Lvl_MapFilenameX_vb
+				; move.b	d0,Lvl_FlyMapFilenameX_vb
+				; bra	.done
+; .easy
+				; cmp.b	#'e',Prefsfile+2
+				; bne	.standard
+				; moveq	#0,d0
+				; ;add.b	#'e',d0
+				; move.b	Prefsfile+2,d0
+				; move.b	d0,Lvl_BinFilenameX_vb
+				; move.b	d0,Lvl_GfxFilenameX_vb
+				; move.b	d0,Lvl_ClipsFilenameX_vb
+				; move.b	d0,Lvl_MapFilenameX_vb
+				; move.b	d0,Lvl_FlyMapFilenameX_vb
+				; bra	.done
 
-.standard
+; .standard
 				moveq	#0,d0
-				add.b	#'s',d0
+				;add.b	#'s',d0
+				move.b	Prefsfile+2,d0
 				move.b	d0,Lvl_BinFilenameX_vb
 				move.b	d0,Lvl_GfxFilenameX_vb
 				move.b	d0,Lvl_ClipsFilenameX_vb
@@ -624,6 +625,7 @@ DEFGAME:
 				not.b	LOADEXT;			 reset for next load
 				rts
 ***************************************************************
+;todo - need to check if these directories (levelh and levele) exist and default to standard (levels) if the do not
 difficultyOptions:
 				lea		mnu_MYDIFFICULTY,a0
 				bsr		MYOPENMENU
