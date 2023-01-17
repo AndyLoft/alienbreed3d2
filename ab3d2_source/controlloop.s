@@ -318,7 +318,10 @@ GETSTATS:
 
 
 SETPLAYERS:
-
+				bra	.not_now
+.retry
+				move.b	#'s',Prefsfile+2
+.not_now
 				moveq	#0,d0
 				;add.b	#'s',d0
 				move.b	Prefsfile+2,d0
@@ -335,6 +338,12 @@ SETPLAYERS:
 				move.b	d0,Lvl_ClipsFilenameXX_vb
 				move.b	d0,Lvl_MapFilenameXX_vb
 				move.b	d0,Lvl_FlyMapFilenameXX_vb
+
+				move.l	#Lvl_MapFilename_vb,d1
+				move.l	#MODE_OLDFILE,d2
+				CALLDOS	Open
+				tst.l	d0
+				beq	.retry
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -602,6 +611,7 @@ DEFGAME:
 				rts
 ***************************************************************
 ;todo - need to check if these directories (levelh and levele) exist and default to standard (levels) if the do not
+;       shoehorned a check into 'SETPLAYERS:'
 difficultyOptions:
 				lea		mnu_MYDIFFICULTY,a0
 				bsr		MYOPENMENU
