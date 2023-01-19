@@ -338,13 +338,15 @@ SETPLAYERS:
 				move.b	d0,Lvl_ClipsFilenameXX_vb
 				move.b	d0,Lvl_MapFilenameXX_vb
 				move.b	d0,Lvl_FlyMapFilenameXX_vb
-
+***************************************************************
+;test to see if directory (file in directory) exists
+;do I need to close this as it gets opened again later?
 				move.l	#Lvl_MapFilename_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 				tst.l	d0
-				beq	.retry
-
+				beq.s	.retry
+***************************************************************
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
@@ -367,6 +369,20 @@ Plr_InitMaster:
 Plr_InitSlave:
 				clr.b	AI_NoEnemies_b
 				jsr		RECFIRST
+				
+				bra	.not_now
+.retry;no idea if this will work for 2player games and I can't test it :(
+				move.b	#'s',Prefsfile+2
+.not_now
+				moveq	#0,d0
+				;add.b	#'s',d0
+				move.b	Prefsfile+2,d0
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
+
 				move.w	d0,PLOPT
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameXX_vb
@@ -374,7 +390,15 @@ Plr_InitSlave:
 				move.b	d0,Lvl_ClipsFilenameXX_vb
 				move.b	d0,Lvl_MapFilenameXX_vb
 				move.b	d0,Lvl_FlyMapFilenameXX_vb
-
+***************************************************************
+;test to see if directory (file in directory) exists
+;do I need to close this as it gets opened again later?
+				move.l	#Lvl_MapFilename_vb,d1
+				move.l	#MODE_OLDFILE,d2
+				CALLDOS	Open
+				tst.l	d0
+				beq.s	.retry
+***************************************************************
 				jsr		RECFIRST
 				move.w	d0,Rand1
 				bsr		TWOPLAYER
@@ -611,7 +635,7 @@ DEFGAME:
 				rts
 ***************************************************************
 ;todo - need to check if these directories (levelh and levele) exist and default to standard (levels) if the do not
-;       shoehorned a check into 'SETPLAYERS:'
+;       shoehorned a check into 'SETPLAYERS:' not sure I have done it correctly
 difficultyOptions:
 				lea		mnu_MYDIFFICULTY,a0
 				bsr		MYOPENMENU
