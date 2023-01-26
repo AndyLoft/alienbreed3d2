@@ -318,9 +318,18 @@ GETSTATS:
 
 
 SETPLAYERS:
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				beq		.retry
+				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
+				beq		.retry
+
 				bra	.not_now
 .retry
 				move.b	#'s',Prefsfile+2
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				bne	.not_now
+				move.w	PLOPT,d0
+				bra		Plr_InitSlave
 .not_now
 				moveq	#0,d0
 				;add.b	#'s',d0
@@ -341,11 +350,14 @@ SETPLAYERS:
 ***************************************************************
 ;test to see if directory (file in directory) exists
 ;do I need to close this as it gets opened again later?
+				SAVEREGS
 				move.l	#Lvl_MapFilename_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 				tst.l	d0
-				beq.s	.retry
+				beq	.retry
+				;CALLDOS	Close
+				GETREGS
 ***************************************************************
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -356,24 +368,30 @@ onepla:
 				rts
 
 Plr_InitMaster:
+				;bsr		TWOPLAYER
 				clr.b	AI_NoEnemies_b
 				move.w	PLOPT,d0
 				jsr		SENDFIRST
-
+				; move.b	Prefsfile+2,d0
+				; jsr		SENDFIRST
 				move.w	Rand1,d0
 				jsr		SENDFIRST
-
 				bsr		TWOPLAYER
+
 				rts
 
 Plr_InitSlave:
+				;bsr		TWOPLAYER
 				clr.b	AI_NoEnemies_b
 				jsr		RECFIRST
+				move.w	d0,PLOPT
+				; jsr		RECFIRST
+				; move.b	d0,Prefsfile+2
 				
-				bra	.not_now
-.retry;no idea if this will work for 2player games and I can't test it :(
+				; bra	.not_now
+; .retry;no idea if this will work for 2player games and I can't test it :(
 				move.b	#'s',Prefsfile+2
-.not_now
+;.not_now
 				moveq	#0,d0
 				;add.b	#'s',d0
 				move.b	Prefsfile+2,d0
@@ -390,15 +408,18 @@ Plr_InitSlave:
 				move.b	d0,Lvl_ClipsFilenameXX_vb
 				move.b	d0,Lvl_MapFilenameXX_vb
 				move.b	d0,Lvl_FlyMapFilenameXX_vb
-***************************************************************
-;test to see if directory (file in directory) exists
-;do I need to close this as it gets opened again later?
-				move.l	#Lvl_MapFilename_vb,d1
-				move.l	#MODE_OLDFILE,d2
-				CALLDOS	Open
-				tst.l	d0
-				beq.s	.retry
-***************************************************************
+; ***************************************************************
+; ;test to see if directory (file in directory) exists
+; ;do I need to close this as it gets opened again later?
+				; move.l	#Lvl_MapFilename_vb,d1
+				; move.l	#MODE_OLDFILE,d2
+				; CALLDOS	Open
+				; tst.l	d0
+				; beq.s	.retry
+				; CALLDOS	Close
+; ***************************************************************
+				move.w	PLOPT,d0
+				add.b	#'a',d0
 				jsr		RECFIRST
 				move.w	d0,Rand1
 				bsr		TWOPLAYER
