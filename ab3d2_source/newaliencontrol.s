@@ -933,7 +933,6 @@ ACTANIMOBJ:
 
 				rts
 
-
 THISPLRxoff:	dc.w	0
 THISPLRzoff:	dc.w	0
 

@@ -383,7 +383,7 @@ Plr_InitSlave:
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
 
-				move.w	d0,PLOPT
+				move.w	PLOPT,d0
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameXX_vb
 				move.b	d0,Lvl_GfxFilenameXX_vb
