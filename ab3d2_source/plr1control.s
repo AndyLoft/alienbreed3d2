@@ -45,16 +45,16 @@ Plr1_MouseControl:
 
 				add.w	d2,Plr1_AimSpeed_l
 				add.w	d3,d0
-				cmp.w	#-80,d0
+				cmp.w	LOOK_MAX,d0
 				bgt.s	.skip_look_up
 				move.w	#-512*20,Plr1_AimSpeed_l
-				move.w	#-80,d0
+				move.w	LOOK_MAX,d0
 
 .skip_look_up:
-				cmp.w	#80,d0
+				cmp.w	LOOK_MIN,d0
 				blt.s	.skip_look_down
 				move.w	#512*20,Plr1_AimSpeed_l
-				move.w	#80,d0
+				move.w	LOOK_MIN,d0
 
 .skip_look_down:
 				move.w	d0,STOPOFFSET
@@ -410,11 +410,11 @@ Plr1_KeyboardControl:
 
 				sub.w	#512,Plr1_AimSpeed_l
 				sub.w	#4,d0
-				cmp.w	#-80,d0
+				cmp.w	LOOK_MAX,d0
 				bgt.s	.skip_look_up
 
 				move.w	#-512*20,Plr1_AimSpeed_l
-				move.w	#-80,d0
+				move.w	LOOK_MAX,d0
 
 .skip_look_up:
 				moveq	#0,d7
@@ -424,11 +424,11 @@ Plr1_KeyboardControl:
 
 				add.w	#512,Plr1_AimSpeed_l
 				add.w	#4,d0
-				cmp.w	#80,d0
+				cmp.w	LOOK_MIN,d0
 				blt.s	.skip_look_down
 
 				move.w	#512*20,Plr1_AimSpeed_l
-				move.w	#80,d0
+				move.w	LOOK_MIN,d0
 
 .skip_look_down:
 				move.b	centre_view_key,d7
