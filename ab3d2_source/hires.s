@@ -790,7 +790,24 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapXSpdVal_l
 				move.l	#0,Plr2_SnapZSpdVal_l
 				move.l	#0,Plr2_SnapYVel_l
+***************************************************************shoehorn this in here AL
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
 
+				move.w	#FS_HEIGHT/2,d0;#FS_C2P_HEIGHT/2,d0;<-should it be this instead of FS_HEIGHT?
+				move.w	d0,LOOK_MIN
+				neg.w	d0
+				move.w	d0,LOOK_MAX
+				
+				bra	.big
+
+.small
+				move.w	#SMALL_HEIGHT/2,d0
+				move.w	d0,LOOK_MIN
+				neg.w	d0
+				move.w	d0,LOOK_MAX
+.big
+***************************************************************
 lop:
 				move.w	#%110000000000,_custom+potgo
 
