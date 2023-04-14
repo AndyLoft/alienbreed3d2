@@ -2038,8 +2038,10 @@ SetupRenderbufferSize:
 				beq.s	.small
 				
 				move.w	#FS_HEIGHT/2,d0;#FS_C2P_HEIGHT/2,d0;<-should it be this instead of FS_HEIGHT?
+				;sub.w	#8,d0
 				move.w	d0,LOOK_MIN
 				neg.w	d0
+				;add.w	#16,d0
 				move.w	d0,LOOK_MAX
 				move.w	STOPOFFSET,d0
 				move.w	d0,d1

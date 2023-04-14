@@ -41,8 +41,18 @@ Plr1_MouseControl:
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
+				move.w	d2,d1
+***************************************************************
+; shoehorned this in here due to the projectiles not having the same trajectory in full screen compaired to small screen
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+				muls.w	#80,d2;this is probably not correct.
+				bra.s	.big
+.small:
 				asl.w	#7,d2
-
+.big:
+***************************************************************
+				;asl.w	#7,d2
 				add.w	d2,Plr1_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	LOOK_MAX,d0
