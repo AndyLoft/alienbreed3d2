@@ -104,6 +104,10 @@ plr1_Dead_b:				ds.b	1 ; hires.s
 plr1_TmpDucked_b:			ds.b	1 ; hires.s
 plr1_StoodOnLift_b:			ds.b	1 ; newanims.s
 
+plr1_NoiseVol_w:			ds.w	1
+plr1_LineTestBit_b:			ds.b	1
+plr1_Reserved1_b:			ds.b	1
+
 ; Temporary tables			- long aligned here
 Plr1_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
 Plr1_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
@@ -203,6 +207,10 @@ plr2_Dead_b:				ds.b	1 ; hires.s
 plr2_TmpDucked_b:			ds.b	1 ; hires.s
 plr2_StoodOnLift_b:			ds.b	1 ; newanims.s
 
+plr2_NoiseVol_w:			ds.w	1
+plr2_LineTestBit_b:			ds.b	1
+plr2_Reserved1_b:			ds.b	1
+
 ; Temporary tables, long aligned here
 Plr2_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
 Plr2_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
@@ -244,7 +252,7 @@ plr_CanJump_b:					ds.b	1
 plr_GunSelected_b:				ds.b	1
 plr_PrevNextWeaponKeyState_b:	ds.b	1
 plr_PrevUseKeyState_b:			ds.b	1
-
+plr_number_b:				ds.b	1
 ; Misc...
 			align 4
 Plr_Health_w:				ds.w	2
