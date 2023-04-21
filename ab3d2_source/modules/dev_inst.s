@@ -290,11 +290,44 @@ Dev_PrintStats:
 				move.l		#136,d0
 				bsr			Dev_PrintF
 
-				; Zone Ptr
-				lea			Plr1_ZonePtr_l,a1
-				lea			.dev_ss_stats_zone_vb,a0
-				move.l		#152+40,d0
+				; Player 1 Gun frame
+				move.w		Plr1_GunFrame_w,d0
+				rol.w		#8,d0
+				move.w		d0,.temp_byte_swap
+				lea			.temp_byte_swap,a1
+				lea			.dev_ss_stats_p1_gf_vb,a0
+				move.l		#152,d0
 				bsr			Dev_PrintF
+
+				; Player 2 Gun frame
+				move.w		Plr2_GunFrame_w,d0
+				rol.w		#8,d0
+				move.w		d0,.temp_byte_swap
+				lea			.temp_byte_swap,a1
+				lea			.dev_ss_stats_p2_gf_vb,a0
+				move.l		#152+16,d0
+				bsr			Dev_PrintF
+
+
+;				; NumObjPtrs
+;				lea			Lvl_NumObjectPoints_w,a1
+;				lea			.dev_ss_stats_lvl_obj_vb,a0
+;				move.l		#152,d0
+;				bsr			Dev_PrintF
+
+;				; Zone Ptr
+;				lea			Plr1_ZonePtr_l,a1
+;				lea			.dev_ss_stats_zone_vb,a0
+;				move.l		#152+40,d0
+;				bsr			Dev_PrintF
+
+;				; Player Structure Size
+;				lea			.player_sizeof,a1
+;				lea			.dev_ss_player_size,a0
+;				move.l		#152,d0
+;				bsr			Dev_PrintF
+
+
 
 ;				; Long Divisions
 ;				lea			dev_Reserved1_w,a1
@@ -324,6 +357,10 @@ Dev_PrintStats:
 
 				rts
 
+.temp_byte_swap:
+.player_sizeof:
+				dc.w		PlrT_SizeOf_l
+
 .dev_fs_stats_tpl_vb:
 				dc.b		"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
 
@@ -348,8 +385,24 @@ Dev_PrintStats:
 .dev_ss_stats_order_zones_vb:
 				dc.b		"OZ:%3d",0
 
-.dev_ss_stats_zone_vb:
-				dc.b		"ZP:%8lx",0
+.dev_ss_stats_lvl_obj_vb:
+				dc.b		"LO:%3d",0
+
+.dev_ss_stats_p1_gf_vb:
+				dc.b		"P1:%3d ",0
+
+.dev_ss_stats_p2_gf_vb:
+				dc.b		"P2:%3d ",0
+
+
+
+;.dev_ss_stats_zone_vb:
+;				dc.b		"ZP:%8lx",0
+
+
+
+;.dev_ss_player_size:
+;				dc.b		"PS:%3d",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:

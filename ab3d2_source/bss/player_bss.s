@@ -45,7 +45,7 @@ plr1_OldX_l:				ds.l	1 ; hires.s
 plr1_OldZ_l:				ds.l	1 ; hires.s
 plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s - write once?
 plr1_SnapSquishedHeight_l:	ds.l	1 ; plr1control.s
-
+plr1_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word data
 Plr1_Energy_w:				ds.w	1
@@ -69,6 +69,7 @@ Plr1_Shield_w:				ds.w	1
 Plr1_Jetpack_w:				ds.w	1
 Plr1_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
 
+Plr1_GunFrame_w:			ds.w	1
 ; Private fields
 plr1_TmpHoldDown_w:			ds.w	1 ; hires.s
 plr1_TmpBobble_w:			ds.w	1 ; hires.s
@@ -102,6 +103,12 @@ plr1_Teleported_b:			ds.b	1 ; hires.s
 plr1_Dead_b:				ds.b	1 ; hires.s
 plr1_TmpDucked_b:			ds.b	1 ; hires.s
 plr1_StoodOnLift_b:			ds.b	1 ; newanims.s
+
+; Temporary tables			- long aligned here
+Plr1_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
+Plr1_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
+
+
 
 ; READY PLAYER TWO !
 
@@ -137,6 +144,7 @@ plr2_OldX_l:				ds.l	1 ; hires.s
 plr2_OldZ_l:				ds.l	1 ; hires.s
 plr2_OldRoomPtr_l:			ds.l	1 ; leveldata2.s
 plr2_SnapSquishedHeight_l:	ds.l	1 ; plr2control.s
+plr2_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word Data
 Plr2_Energy_w:				ds.w	1
@@ -158,6 +166,8 @@ Plr2_AmmoCounts_vw:			ds.w	20
 Plr2_Shield_w:				ds.w	1
 Plr2_Jetpack_w:				ds.w	1
 Plr2_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
+
+Plr2_GunFrame_w:			ds.w	1
 
 ; Private
 plr2_TmpHoldDown_w:			ds.w	1 ; hires.s
@@ -193,6 +203,10 @@ plr2_Dead_b:				ds.b	1 ; hires.s
 plr2_TmpDucked_b:			ds.b	1 ; hires.s
 plr2_StoodOnLift_b:			ds.b	1 ; newanims.s
 
+; Temporary tables, long aligned here
+Plr2_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
+Plr2_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
+
 ; READY PLAYER whoever...
 			align 4
 ;Plr_GunDataPtr_l:			ds.l	1
@@ -201,6 +215,8 @@ Plr_ShotDataPtr_l:			ds.l	1
 ; Private fields
 plr_JumpSpeed_l:			ds.l	1 ; fall.s
 plr_OldHeight_l:			ds.l	1 ; fall.s
+plr_TargetYDiff_l:			ds.l	1
+plr_TempYOffset_l:			ds.l	1
 
 Plr_AddToBobble_w:			ds.w	1
 
@@ -208,6 +224,16 @@ Plr_AddToBobble_w:			ds.w	1
 ; Word fields
 ; Private
 plr_FallDamage_w:			ds.w	1 ; fall.s
+plr_TargetDistance_w:		ds.w	1
+plr_TempAnglePos_w:			ds.w	1
+plr_MaxGunFrame_b:			ds.w	1 ; accessed as byte
+plr_BulletType_w:			ds.w	1
+plr_AmmoInMyGun_w:			ds.w	1
+plr_BulletSpeed_w:			ds.w	1
+plr_TempStoodInTop_b:		ds.w	1 ; accessed as byte
+plr_TempXDir_w:				ds.w	1
+plr_TempZDir_w:				ds.w	1
+plr_TempGun_b:				ds.w	1 ; accessed as byte
 
 Plr_MultiplayerType_b:		ds.b	1	; CHAR enum - m(aster), s(lave), n(either)
 Plr_Decelerate_b:			ds.b	1
@@ -219,24 +245,12 @@ plr_GunSelected_b:				ds.b	1
 plr_PrevNextWeaponKeyState_b:	ds.b	1
 plr_PrevUseKeyState_b:			ds.b	1
 
-; Tables...
+; Misc...
 			align 4
-Plr1_ObjectDistances_vw:	ds.w	250
-Plr2_ObjectDistances_vw:	ds.w	250
-
 Plr_Health_w:				ds.w	2
 Plr_AmmoCounts_vw:			ds.w	20
 Plr_Shield_w:				ds.w	2
 Plr_Weapons_vw:				ds.w	10
 Plr_TurnSpeed_w:			ds.w	1
-
-			align 4
-
-Plr1_GunFrame_w:		ds.w	1
-Plr2_GunFrame_w:		ds.w	1
-
-Plr1_ObsInLine_vb:		ds.b	400
-Plr2_ObsInLine_vb:		ds.b	400
-
 BIGsmall:				ds.b	1
 lastscr:				ds.b	1
