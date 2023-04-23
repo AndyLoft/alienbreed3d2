@@ -3865,7 +3865,6 @@ DrawDisplay:
 				;bsr	CalcPLR1InLine
 
 				lea		Plr1_Data,a0
-				st	plr_number_b
 				bsr		Plr_CalcInLine
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -3878,7 +3877,6 @@ DrawDisplay:
 doplr2too:
 				;bsr	CalcPLR2InLine
 				lea		Plr2_Data,a0
-				clr.b	plr_number_b
 				bsr		Plr_CalcInLine
 
 noplr2either:

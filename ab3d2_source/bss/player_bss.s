@@ -252,7 +252,7 @@ plr_CanJump_b:					ds.b	1
 plr_GunSelected_b:				ds.b	1
 plr_PrevNextWeaponKeyState_b:	ds.b	1
 plr_PrevUseKeyState_b:			ds.b	1
-plr_number_b:				ds.b	1
+; plr_number_b:				ds.b	1
 ; Misc...
 			align 4
 Plr_Health_w:				ds.w	2

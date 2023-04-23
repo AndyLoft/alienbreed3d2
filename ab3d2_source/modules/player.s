@@ -1152,28 +1152,33 @@ Plr_Shot:
 
 .okcanshoot:
 				; Divergence in behaviour for players
-				cmp.b	#'n',Plr_MultiplayerType_b
-				bne.s	.done_player
+				; cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
+				; bne.s	.done_player
 				
-				tst.b	plr_number_b
+				; ;tst.b	plr_number_b
 				; cmp.l	Plr1_Data,a3
-				bne.s	.as_player_1
+				; beq.s	.done_player1
+				; bne.s	.as_player_1
 
-.as_player_2:
-				cmp.b	#'s',Plr_MultiplayerType_b
-				bne.s	.not_player
-				bra.s	.done_player
+; .as_player_2:
+				; cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				; bne.s	.not_player
+				; bra.s	.done_player
 
-.as_player_1:
-				cmp.b	#'s',Plr_MultiplayerType_b
-				beq.s	.not_player
+; .as_player_1:
+				; cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				; beq.s	.not_player
 
-.done_player:
+; .done_player:
 				;This part is always "player 1"
-				move.l	Plr1_ObjectPtr_l,a2
+				; move.l	Plr1_ObjectPtr_l,a2
+				; move.w	#1,EntT_Timer1_w+128(a2)
+				; bra.s	.not_player1
+; .done_player1:
+				move.l	Plr1_ObjectPtr_l,a2	;WHY is this part is always "player 1"?
 				move.w	#1,EntT_Timer1_w+128(a2)
 
-.not_player:
+; .not_player1:
 				move.w	ShootT_Delay_w(a6),PlrT_TimeToShoot_w(a3)
 				move.b	plr_MaxGunFrame_b,PlrT_GunFrame_w(a3)
 				sub.w	d1,d2
