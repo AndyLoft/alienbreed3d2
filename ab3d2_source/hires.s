@@ -6510,8 +6510,8 @@ VBlankInterrupt:
 				addq.l	#1,main_counter
 				addq.l	#1,Vid_VBLCount_l
 				subq.w	#1,Anim_Timer_w
-				tst.w	Anim_VecDelay_b			; not sure this is needed or does anything
-;				bne.s	.not_set
+				tst.w	Anim_VecDelay_b
+				bne.s	.not_set
 				subq.w	#1,Anim_VecTimer_w
 .not_set
 				tst.l	timer					; used by menu system as delay
