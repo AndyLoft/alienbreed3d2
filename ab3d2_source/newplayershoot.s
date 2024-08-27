@@ -163,7 +163,8 @@ Plr1_Shot:
 				; update the viewport weapon entity timer
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	#1,ENT_NEXT_2+EntT_Timer1_w(a2)
-
+				move.w	#4,Anim_VecTimer_w
+				st	Anim_VecDelay_b
 .notplr1:
 				move.w	ShootT_Delay_w(a6),Plr1_TimeToShoot_w
 				move.b	MaxFrame,Plr1_GunFrame_w

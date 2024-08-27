@@ -966,6 +966,14 @@ nofadedownhc:
 .skipWaitTOF:
 				move.l	d3,Vid_VBLCountLast_l
 
+				cmp	#0,Anim_VecTimer_w
+				bgt.s	.not_zero
+				move.w	#4,Anim_VecTimer_w
+				st	Anim_VecDelay_b
+				bra	.is_zero
+.not_zero
+				clr.w	Anim_VecDelay_b
+.is_zero
 ; Swap screen bitmaps
 				move.l	Vid_DrawScreenPtr_l,d0
 				move.l	Vid_DisplayScreenPtr_l,Vid_DrawScreenPtr_l
@@ -6502,7 +6510,10 @@ VBlankInterrupt:
 				addq.l	#1,main_counter
 				addq.l	#1,Vid_VBLCount_l
 				subq.w	#1,Anim_Timer_w
-
+				tst.w	Anim_VecDelay_b			; not sure this is needed or does anything
+;				bne.s	.not_set
+				subq.w	#1,Anim_VecTimer_w
+.not_set
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
 				subq.l	#1,timer

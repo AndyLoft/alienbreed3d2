@@ -24,6 +24,7 @@ anim_OddEven_w:			ds.w	1
 anim_FloorMoveSpeed_w:	ds.w	1
 Anim_BrightTable_vw:	ds.w	20
 Anim_Timer_w:			ds.w	1
+Anim_VecTimer_w:		ds.w	1
 anim_ThisDoor_w:		ds.w	1
 anim_OpeningSpeed_w:	ds.w	1
 anim_ClosingSpeed_w:	ds.w	1
@@ -34,3 +35,6 @@ anim_OpenedSoundFX_w:	ds.w	1
 anim_ClosedSoundFX_w:	ds.w	1
 anim_ActionSoundFX_w:	ds.w	1
 anim_MaxDamage_w:		ds.w	1
+
+; Byte data
+Anim_VecDelay_b:		ds.b	1
