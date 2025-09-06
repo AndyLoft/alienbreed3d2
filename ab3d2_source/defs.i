@@ -525,6 +525,12 @@ LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
 ; Maximum number of zones. Once this is fully working, redefine as LVL_EXPANDED_MAX_ZONE_COUNT
 LVL_MAX_ZONE_COUNT EQU 256
 
+; Maximum number of door zones.
+LVL_MAX_DOOR_ZONES EQU 16
+
+; Maximum number of lift zones.
+LVL_MAX_LIFT_ZONES EQU 16
+
 ;
 ; LEVEL DATA FILES
 ;
@@ -594,23 +600,27 @@ LVL_MAX_ZONE_COUNT EQU 256
 
 		LABEL LvlT_SizeOf_l
 
-    ; Object Data Definition
-	STRUCTURE DoorT,0
-		UWORD DoorT_Bottom_w			;  0, 2
-		UWORD DoorT_Top_w				;  2, 2
-		UWORD DoorT_OpeningSpeed_w		;  4, 2
-		UWORD DoorT_ClosingSpeed_w		;  6, 2
-		UWORD DoorT_OpenDuration_w		;  8, 2
-		UWORD DoorT_OpeningSoundFX_w	; 10, 2
-		UWORD DoorT_ClosingSoundFX_w	; 12, 2
-		UWORD DoorT_OpenedSoundFX_w		; 14, 2
-		UWORD DoorT_ClosedSoundFX_w		; 16, 2
-		UWORD DoorT_Word9_w				; 18, 2 - something X coordinate related
-		UWORD DoorT_Word10_w			; 20, 2 - something Z coordinate related
-		UWORD DoorT_Word11_w			; 22, 2
-		UWORD DoorT_Word12_w			; 24, 2
-		UWORD DoorT_Long_w				; 26, 4
-		UWORD DoorT_ZoneID_w			; 30, 2 - Is this the zone ID the door is attached to?
+    ; Door Data Structure
+	STRUCTURE ZLiftableT,0
+		UWORD ZLiftableT_Bottom_w			;  0, 2
+		UWORD ZLiftableT_Top_w				;  2, 2
+		UWORD ZLiftableT_OpeningSpeed_w		;  4, 2
+		UWORD ZLiftableT_ClosingSpeed_w		;  6, 2
+		UWORD ZLiftableT_OpenDuration_w		;  8, 2
+		UWORD ZLiftableT_OpeningSoundFX_w	; 10, 2
+		UWORD ZLiftableT_ClosingSoundFX_w	; 12, 2
+		UWORD ZLiftableT_OpenedSoundFX_w	; 14, 2
+		UWORD ZLiftableT_ClosedSoundFX_w	; 16, 2
+		UWORD ZLiftableT_Word9_w			; 18, 2 - something X coordinate related
+		UWORD ZLiftableT_Word10_w			; 20, 2 - something Z coordinate related
+		UWORD ZLiftableT_Word11_w			; 22, 2
+		UWORD ZLiftableT_Word12_w			; 24, 2
+		UWORD ZLiftableT_GraphicsPtrOffset_l; 26, 4 - offset from Lvl_GraphicsPtr_l
+		UWORD ZLiftableT_ZoneID_w			; 30, 2
+		UWORD ZLiftableT_Word16_w			; 32, 2
+		UBYTE ZLiftableT_RaiseCondition_b	; 34, 1
+		UBYTE ZLiftableT_LowerCondition_b   ; 35, 1
+		LABEL ZLiftableT_SizeOf_l			; 36
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80

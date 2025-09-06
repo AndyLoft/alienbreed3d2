@@ -63,12 +63,26 @@
         "vid.frame_skip",
         &Prefs_FPSLimit_b,
         CFG_PARAM_TYPE_INT,
-        CFG_VAR_TYPE_UBYTE
+        CFG_VAR_TYPE_BYTE
     },
 
     {
         "vid.prefer_akiko",
         &C2P_UseAkiko_b,
+        CFG_PARAM_TYPE_BOOL,
+        CFG_VAR_TYPE_UBYTE
+    },
+
+    {
+        "vid.akiko_mirror",
+        &C2P_AkikoMirror_b,
+        CFG_PARAM_TYPE_BOOL,
+        CFG_VAR_TYPE_UBYTE
+    },
+
+    {
+        "vid.akiko_030_fix",
+        &C2P_AkikoCACR_b,
         CFG_PARAM_TYPE_BOOL,
         CFG_VAR_TYPE_UBYTE
     },
