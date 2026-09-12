@@ -236,7 +236,7 @@ draw_bitmap_glare:
 				;DEV_INC.w Reserved1
 				; 0xABADCAFE - Not worth it < 10 typically
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
 
@@ -255,7 +255,7 @@ draw_bitmap_glare:
 				divs	d1,d6
 				;DEV_INC.w Reserved1
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d2,d6
 				ble		object_behind
 
@@ -272,7 +272,7 @@ draw_bitmap_glare:
 				asl.l	#7,d2
 				add.l	d2,d0
 				addq	#2,a0
-				move.l	Draw_TexturePalettePtr_l,a4
+				move.l	Draw_PaletteShadeTablePtr_l,a4
 				sub.l	#512,a4
 				move.w	(a0)+,d2				; height
 				add.w	draw_AuxY_w,d2
@@ -283,7 +283,7 @@ draw_bitmap_glare:
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d2
+				add.w	Vid_ViewHorizonY_w,d2
 
 				divs	d1,d0
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -602,7 +602,7 @@ draw_Bitmap:
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
 
@@ -618,7 +618,7 @@ draw_Bitmap:
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d2,d6					; bottom of object over top of screen?
 				ble		object_behind
 
@@ -697,7 +697,7 @@ pastobjscale:
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d2
+				add.w	Vid_ViewHorizonY_w,d2
 
 				divs	d1,d0
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -1691,7 +1691,7 @@ polybehind:
 ; struct Lvl_ObjectPointsPtr_l {short x,y,z}
 draw_PolygonModel:
 				move.w	EntT_CurrentAngle_w(a0),draw_ObjectAng_w
-				move.w	Vid_CentreY_w,draw_PolygonCentreY_w
+				move.w	Vid_ViewHorizonY_w,draw_PolygonCentreY_w
 				move.w	(a0)+,d0				; object Id?
 				move.l	Lvl_ObjectPointsPtr_l,a4
 				move.w	(a4,d0.w*8),draw_Obj_XPos_w
@@ -2440,7 +2440,7 @@ toobright:
 				asl.w	#8,d1
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				;add.l	#256*32,a1
 				lea		8192(a1,d1.w),a1
 				tst.b	draw_PreGouraud_b
@@ -2581,7 +2581,7 @@ val				SET		val+SCREEN_WIDTH
 				ENDR
 
 predoglare:
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				sub.w	#512,a1
 
 DOGLAREPOLY:
@@ -2744,7 +2744,7 @@ LinesPtr:		dc.l	0
 PtsPtr:			dc.l	0
 
 gotlurvelyshading:
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 				tst.b	draw_PreGouraud_b
 
@@ -2948,7 +2948,7 @@ toodimh:
 
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				;add.l	#256*32,a1
 				;add.w	d1,a1
 

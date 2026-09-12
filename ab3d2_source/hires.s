@@ -709,7 +709,7 @@ NOALLWALLS:
 				move.w	#SMALL_WIDTH/2,Vid_CentreX_w
 				move.w	#SMALL_WIDTH,Vid_RightX_w
 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
-				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
+				move.w	#SMALL_HEIGHT/2,Vid_CentreY_w
 				sf		Vid_FullScreen_b
 				CALLC	Draw_ResetGameDisplay
 
@@ -726,7 +726,7 @@ CLRDAM:
 				moveq	#0,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
-				add.w	TOTHEMIDDLE,d0
+				add.w	Vid_CentreY_w,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
@@ -1085,8 +1085,8 @@ waitmaster:
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
-				move.l	d0,Vid_CentreY_w	; why long?
-				move.l	d1,Vid_CentreY_w+4
+				move.l	d0,Vid_ViewHorizonY_w	; why long?
+				move.l	d1,Vid_ViewHorizonY_w+4
 
 ; 0xABADCAFE - this needs a countdown timer to slow down the water animation
 				move.l	draw_LastWaterFramePtr_l,a0
@@ -2171,7 +2171,7 @@ startCopper:
 				move.w	d0,Vid_CentreX_w
 
 				move.w	#FS_HEIGHT,Vid_BottomY_w
-				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
+				move.w	#FS_HEIGHT/2,Vid_CentreY_w
 
 				bra.s	.wipeScreen
 
@@ -2185,7 +2185,7 @@ startCopper:
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
-				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
+				move.w	#SMALL_HEIGHT/2,Vid_CentreY_w
 
 .wipeScreen:
 				CALLC	Draw_ResetGameDisplay
@@ -2223,6 +2223,7 @@ SAVELETTER:		dc.b	'd',0
 				even
 
 				include "modules/draw/draw_map.s"
+				include "modules/draw/draw_radar.s"
 				include "modules/c2p/c2p.s"
 				include	"pauseopts.s"
 				include "modules/dev_inst.s"
@@ -2230,18 +2231,18 @@ SAVELETTER:		dc.b	'd',0
 
 Lvl_ExitZoneID_w:		dc.w	0
 
-***************************************************************************
-***************************************************************************
-****************** End of Main Loop here **********************************
-***************************************************************************
-***************************************************************************
+;***************************************************************************
+;***************************************************************************
+;****************** End of Main Loop here **********************************
+;***************************************************************************
+;***************************************************************************
 
 
 READCONTROLS:	dc.w	0
 
-tstststst:		dc.w	0
+tstststst:		dc.w	0 ; unused
 
-BollocksRoom:
+BollocksRoom:	; A null zone strucure in reality
 				dc.w	-1
 				ds.l	50
 
@@ -3312,7 +3313,7 @@ oknothalf:
 
 				bclr.b	#1,$bfe001
 
-				move.l	Draw_TexturePalettePtr_l,a2
+				move.l	Draw_PaletteShadeTablePtr_l,a2
 				add.l	#256*40,a2
 				moveq	#0,d2
 
@@ -3651,7 +3652,7 @@ aboveplayer:
 				beq.s	dontdrawreturn
 
 				; its a ceiling
-				move.w	Vid_CentreY_w,d7
+				move.w	Vid_ViewHorizonY_w,d7
 				sub.w	draw_TopClip_w,d7
 				ble.s	dontdrawreturn
 
@@ -3663,7 +3664,7 @@ aboveplayer:
 				; is below camera
 below:
 				move.w	draw_BottomClip_w,d7
-				sub.w	Vid_CentreY_w,d7
+				sub.w	Vid_ViewHorizonY_w,d7
 				ble.s	dontdrawreturn			; don't draw if no room between screen center amd bottom clip
 
 
@@ -3673,7 +3674,7 @@ notbelow:
 
 				move.w	d6,View2FloorDist		; (floorY - ViewerY) in worldspace
 				;		|
-				;-------+---------------------- Vid_CentreY_w
+				;-------+---------------------- Vid_ViewHorizonY_w
 				;***    |
 				;   *** |
 				;      *** clipY
@@ -4548,12 +4549,12 @@ pastscale:
 
 ; Its a ceiling, clip it to top/bottom
 ; For ceilings, the top and bottom have reversed roles
-; The ceiling's +Y goes "up" on the screen, with Vid_CentreY_w of screen mapping to 0.
-; That's why there's the gymnastics with ; (Vid_CentreY_w - N) to transform the
+; The ceiling's +Y goes "up" on the screen, with Vid_ViewHorizonY_w of screen mapping to 0.
+; That's why there's the gymnastics with ; (Vid_ViewHorizonY_w - N) to transform the
 ; screen clipping coordinates into "ceiling coordinates"
 ; This turns the 'top' variable actually into the bottommost Y of the ceiling.
 
-				move.w	Vid_CentreY_w,d7
+				move.w	Vid_ViewHorizonY_w,d7
 				btst	#0,d7
 				bne.s	.evenMiddleRoof
 				sub.w	#SCREEN_WIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
@@ -4563,17 +4564,17 @@ pastscale:
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7			; bottom of floor
-				move.w	Vid_CentreY_w,d3
+				move.w	Vid_ViewHorizonY_w,d3
 				move.w	d3,d4
 				sub.w	draw_TopClip_w,d3
 				sub.w	draw_BottomClip_w,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top_of_floor >= (Vid_CentreY_w-draw_TopClip_w)
+				bge		predontdrawfloor		; top_of_floor >= (Vid_ViewHorizonY_w-draw_TopClip_w)
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom_of_floor < (Vid_CentreY_w-draw_BottomClip_w) ?
+				blt		predontdrawfloor		; bottom_of_floor < (Vid_ViewHorizonY_w-draw_BottomClip_w) ?
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			; top_of_floor >= (Vid_CentreY_w-draw_BottomClip_w)  ?
-				move.w	d4,d1					; clip top_of_floor to (Vid_CentreY_w-draw_BottomClip_w)
+				bge.s	.nocliptoproof			; top_of_floor >= (Vid_ViewHorizonY_w-draw_BottomClip_w)  ?
+				move.w	d4,d1					; clip top_of_floor to (Vid_ViewHorizonY_w-draw_BottomClip_w)
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		.doneclip
@@ -4586,7 +4587,7 @@ pastscale:
 
 .clipfloor:
 				move.w	Vid_BottomY_w,d7
-				move.w	Vid_CentreY_w,d4
+				move.w	Vid_ViewHorizonY_w,d4
 				btst	#0,d4
 				beq.s	.evenMiddleFloor
 				add.w	#SCREEN_WIDTH,a6
@@ -4599,19 +4600,19 @@ pastscale:
 				move.w	bottom(pc),d7
 
 				move.w	draw_BottomClip_w,d4
-				sub.w	Vid_CentreY_w,d4
+				sub.w	Vid_ViewHorizonY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_CentreY_w)
+				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_ViewHorizonY_w)
 
 				move.w	draw_TopClip_w,d3
-				sub.w	Vid_CentreY_w,d3
+				sub.w	Vid_ViewHorizonY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_CentreY_w)
+				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_ViewHorizonY_w)
 
-				move.w	d3,d1					; clip top_of_floor to (draw_TopClip_w - Vid_CentreY_w)
+				move.w	d3,d1					; clip top_of_floor to (draw_TopClip_w - Vid_ViewHorizonY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; (bottom) <= (draw_TopClip_w - Vid_CentreY_w) : bottom <= draw_TopClip_w (bottom of floor above draw_TopClip_w)
+				ble		predontdrawfloor		; (bottom) <= (draw_TopClip_w - Vid_ViewHorizonY_w) : bottom <= draw_TopClip_w (bottom of floor above draw_TopClip_w)
 				cmp.w	d4,d7
 				blt.s	.noclipbotfloor			; (bottom) < (draw_BottomClip_w)
 				move.w	d4,d7					; bottom = draw_BottomClip_w
@@ -4660,7 +4661,7 @@ pastscale:
 				muls.w	linedir,d1				; top line in screen times renderwidth (typical 320)
 				add.l	d1,a6					; this is where we start writing?
 
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 
 				lea		draw_FloorLine,a5
@@ -4680,23 +4681,23 @@ pix1h:
 				beq.s	clipfloor
 
 				; clip roof?
-				move.w	Vid_CentreY_w,d7
+				move.w	Vid_ViewHorizonY_w,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
-				move.w	Vid_CentreY_w,d3
+				move.w	Vid_ViewHorizonY_w,d3
 				move.w	d3,d4
 				sub.w	draw_TopClip_w,d3
 				sub.w	draw_BottomClip_w,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top >= Vid_CentreY_w - draw_TopClip_w
+				bge		predontdrawfloor		; top >= Vid_ViewHorizonY_w - draw_TopClip_w
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom >= Vid_CentreY_w - bottomclip
+				blt		predontdrawfloor		; bottom >= Vid_ViewHorizonY_w - bottomclip
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			F; top >= Vid_CentreY_w - bottomclip
-				move.w	d4,d1					; top = Vid_CentreY_w - bottomclip
+				bge.s	.nocliptoproof			F; top >= Vid_ViewHorizonY_w - bottomclip
+				move.w	d4,d1					; top = Vid_ViewHorizonY_w - bottomclip
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		doneclip
@@ -4705,27 +4706,27 @@ pix1h:
 
 clipfloor:
 				move.w	Vid_BottomY_w,d7
-				sub.w	Vid_CentreY_w,d7
+				sub.w	Vid_ViewHorizonY_w,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
 				move.w	draw_BottomClip_w,d4
-				sub.w	Vid_CentreY_w,d4
+				sub.w	Vid_ViewHorizonY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_CentreY_w)
+				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_ViewHorizonY_w)
 				move.w	draw_TopClip_w,d3
-				sub.w	Vid_CentreY_w,d3
+				sub.w	Vid_ViewHorizonY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_CentreY_w)
-				move.w	d3,d1					; top =  (draw_TopClip_w - Vid_CentreY_w)
+				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_ViewHorizonY_w)
+				move.w	d3,d1					; top =  (draw_TopClip_w - Vid_ViewHorizonY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; bottom <=  (draw_TopClip_w - Vid_CentreY_w)
+				ble		predontdrawfloor		; bottom <=  (draw_TopClip_w - Vid_ViewHorizonY_w)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor			; bottom <= (draw_BottomClip_w - Vid_CentreY_w)
-				move.w	d4,d7					; botom = (draw_BottomClip_w - Vid_CentreY_w)
+				blt.s	.noclipbotfloor			; bottom <= (draw_BottomClip_w - Vid_ViewHorizonY_w)
+				move.w	d4,d7					; botom = (draw_BottomClip_w - Vid_ViewHorizonY_w)
 .noclipbotfloor:
 
 doneclip:
@@ -4762,7 +4763,7 @@ doneclip:
 				muls	linedir,d1
 				add.l	d1,a6					; renderbuffer start address
 ; sub.l d1,REFPTR
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 ;				move.l	LineToUse,a5			; This function ptr has been stored by the very outermost
 				lea		draw_FloorLine,a5
@@ -5011,7 +5012,7 @@ noclipleftGOUR:
 				move.l	a6,a3
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
 				move.l	draw_Distance_l,d0
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 				move.l	Draw_FloorTexturesPtr_l,a0
 				adda.w	whichtile,a0
@@ -5106,7 +5107,7 @@ dofloornoclipGOUR:
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
 				move.l	d6,d0
 				move.l	d0,draw_Distance_l
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 				move.l	Draw_FloorTexturesPtr_l,a0
 				adda.w	whichtile,a0
@@ -5175,7 +5176,7 @@ draw_FloorLine:
 				move.w	#28,d1					; high clamp
 
 .smallbright:
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 
 				; todo - is this used?
@@ -5652,7 +5653,7 @@ draw_WaterSurface:
 
 				add.l	wateroff,d5
 
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*16,a1 ; halfway into the glare shade table
 				move.l	draw_Distance_l,d0
 
@@ -5741,7 +5742,7 @@ acrossscrnw:
 draw_WaterSurfaceDouble:
 				move.l	d1,d4
 				add.l	wateroff,d5
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*16,a1
 				move.l	draw_Distance_l,d0
 				asr.l	#2,d0
@@ -6609,7 +6610,7 @@ nostartalan:
 				move.w	View_LookMax_w,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
-				add.w	TOTHEMIDDLE,d0
+				add.w	Vid_CentreY_w,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
@@ -6699,7 +6700,7 @@ control2:
 				move.w	View_LookMax_w,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
-				add.w	TOTHEMIDDLE,d0
+				add.w	Vid_CentreY_w,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
